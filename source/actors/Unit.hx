@@ -39,11 +39,13 @@ class Unit extends Actor
 
 	function get_movement_options()
 	{
+		var start:Float = Sys.time();
+
 		movement_options = [];
 
 		var unit_world_pos:FlxPoint = new FlxPoint(tile_position.x * level.tile_size + level.x, tile_position.y * level.tile_size + level.y);
 
-		var mod_speed:Int = speed + 3;
+		var mod_speed:Int = speed + 1;
 		for (row in -mod_speed...mod_speed)
 		{
 			for (col in -mod_speed...mod_speed)
@@ -71,6 +73,8 @@ class Unit extends Actor
 
 		PlayState.self.select_squares.select_squares(movement_options);
 
+		trace("TIME: " + (Sys.time() - start));
+
 		return movement_options;
 	}
 
@@ -82,7 +86,7 @@ class Unit extends Actor
 
 	public function select_position()
 	{
-		var SELECT_INPUT:Bool = FlxG.mouse.pressed;
+		var SELECT_INPUT:Bool = Ctrl.cursor_select;
 		var CURSOR_POSITION:FlxPoint = PlayState.self.cursor.tile_position;
 		var selected_pos:FlxPoint;
 
@@ -97,6 +101,8 @@ class Unit extends Actor
 			{
 				teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
 				SELECTED = false;
+				Ctrl.cursor_select = false;
+				PlayState.self.select_squares.select_squares([]);
 				return;
 			}
 		}

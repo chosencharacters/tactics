@@ -43,7 +43,7 @@ class Cursor extends FlxSpriteExt
 		var tile_x:Int = Math.floor((x - PlayState.self.level.x) / PlayState.self.level.tile_size);
 		var tile_y:Int = Math.floor((y - PlayState.self.level.y) / PlayState.self.level.tile_size);
 
-		if (FlxG.mouse.justPressed)
+		if (Ctrl.cursor_select)
 		{
 			PlayState.self.select_squares.select_squares([]);
 			for (unit in PlayState.self.units)

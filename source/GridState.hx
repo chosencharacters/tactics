@@ -15,7 +15,12 @@ class GridState
 	var ready_for_next_turn:Bool = false;
 	var realizing_state:Bool = false;
 
-	public function new() {}
+	public var grid:Array<Int> = [];
+
+	public function new()
+	{
+		grid = PlayState.self.level.getData(true);
+	}
 
 	public function update()
 	{

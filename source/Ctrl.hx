@@ -20,6 +20,8 @@ class Ctrl
 	public static var none:Array<Bool> = [false];
 	public static var use:Array<Bool> = [false];
 
+	public static var cursor_select:Bool = false;
+
 	// just pressed
 	public static var jgrapple:Array<Bool> = [false];
 	public static var jattack:Array<Bool> = [false];
@@ -144,6 +146,7 @@ class Ctrl
 		}
 		altcontrol();
 		menuControl();
+		cursor_select = FlxG.mouse.justPressed;
 	}
 
 	public static function altcontrol()

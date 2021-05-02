@@ -34,10 +34,10 @@ class Unit extends Actor
 	public function select()
 	{
 		SELECTED = true;
-		get_movement_options();
+		get_movement_options(PlayState.self.current_grid_state);
 	}
 
-	function get_movement_options()
+	function get_movement_options(state:GridState, auto_highlight:Bool = false)
 	{
 		var start:Float = Sys.time();
 
@@ -71,7 +71,8 @@ class Unit extends Actor
 			}
 		}
 
-		PlayState.self.select_squares.select_squares(movement_options);
+		if (auto_highlight)
+			PlayState.self.select_squares.select_squares(movement_options);
 
 		trace("TIME: " + (Sys.time() - start));
 

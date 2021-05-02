@@ -15,11 +15,11 @@ class GridState
 	var ready_for_next_turn:Bool = false;
 	var realizing_state:Bool = false;
 
-	public var grid:Array<Int> = [];
+	public var grid:GridArray;
 
 	public function new()
 	{
-		grid = PlayState.self.level.getData(true);
+		grid = new GridArray(PlayState.self.level.getData(true);
 	}
 
 	public function update()
@@ -52,5 +52,22 @@ class GridState
 			move_x: -1,
 			move_y: -1
 		};
+	}
+}
+
+class GridArray
+{
+	var array:Array<Int> = [];
+	var width_in_tiles:Int = 0;
+
+	public function new(ArrayCopy:Array<Int>)
+	{
+		array = ArrayCopy;
+		width_in_tiles = PlayState.self.level.widthInTiles;
+	}
+
+	public function getTile(X:Int, Y:Int)
+	{
+		return array[Y * width_in_tiles + X];
 	}
 }

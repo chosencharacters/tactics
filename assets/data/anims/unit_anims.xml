@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<root>
+	<animSet image = "boy" path = "assets\images\chars">
+		<anim name = "idle">0</anim>
+		<anim name = "move">1t6</anim>
+	</animSet>
+
+	<animSet image = "girl" path = "assets\images\chars">
+		<anim name = "idle">0</anim>
+		<anim name = "move">1t6</anim>
+	</animSet>
+</root>

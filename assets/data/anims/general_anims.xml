@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<root>
+	<animSet image = "cursor" path = "assets\images\ui">
+		<anim name = "idle">0t4</anim>
+	</animSet>
+</root>
+
+<!---->
+<!---->
+<!---->

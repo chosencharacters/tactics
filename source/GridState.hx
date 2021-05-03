@@ -69,21 +69,23 @@ class GridArray
 
 		var indexes:Array<Int> = [];
 
-		for (i in 0...array.length)
-		{
-			if (array[i] == 1)
+		/*
+			for (i in 0...array.length)
 			{
-				var square:FlxSpriteExt = new FlxSpriteExt();
-				var point:FlxPoint = PlayState.self.level.getTileCoordsByIndex(i, false);
-				square.setPosition(point.x, point.y);
-				square.makeGraphic(32, 32, FlxColor.RED);
-				square.alpha = 0.25;
+				if (array[i] == 1)
+				{
+					var square:FlxSpriteExt = new FlxSpriteExt();
+					var point:FlxPoint = PlayState.self.level.getTileCoordsByIndex(i, false);
+					square.setPosition(point.x, point.y);
+					square.makeGraphic(32, 32, FlxColor.RED);
+					square.alpha = 0.25;
 
-				indexes.push(i);
+					indexes.push(i);
 
-				PlayState.self.add(square);
+					PlayState.self.add(square);
+				}
 			}
-		}
+		 */
 
 		trace(indexes);
 	}

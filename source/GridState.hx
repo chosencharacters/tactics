@@ -19,7 +19,7 @@ class GridState
 
 	public function new()
 	{
-		grid = new GridArray(PlayState.self.level.getData(true);
+		grid = new GridArray(PlayState.self.level.getData(true));
 	}
 
 	public function update()
@@ -59,15 +59,19 @@ class GridArray
 {
 	var array:Array<Int> = [];
 	var width_in_tiles:Int = 0;
+	var height_in_tiles:Int = 0;
 
 	public function new(ArrayCopy:Array<Int>)
 	{
 		array = ArrayCopy;
 		width_in_tiles = PlayState.self.level.widthInTiles;
+		height_in_tiles = PlayState.self.level.heightInTiles;
 	}
 
 	public function getTile(X:Int, Y:Int)
 	{
+		if (X < 0 || X > width_in_tiles || Y < 0 || Y > height_in_tiles)
+			return -1;
 		return array[Y * width_in_tiles + X];
 	}
 }

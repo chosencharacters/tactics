@@ -53,7 +53,7 @@ class Unit extends Actor
 		return valid_moves;
 	}
 
-	function bfs(state:GridState, start:FlxPoint, goal:FlxPoint, never_valid:Bool = false):Array<FlxPoint>
+	function bfs(state:GridState, start:FlxPoint, goal:FlxPoint):Array<FlxPoint>
 	{
 		var open_set:Array<FlxPoint> = [start];
 		var visited:Array<FlxPoint> = [];
@@ -63,72 +63,15 @@ class Unit extends Actor
 		{
 			current = open_set.pop();
 			visited.push(current);
-			for (neighbor in get_neighbors(visited, current, state))
-			{
+			for (neighbor in get_neighbors(state, current))
 				if (!set_contains_point(visited, neighbor) && h(start, neighbor) <= speed)
 					open_set.push(neighbor);
-			}
 		}
 
 		return visited;
 	}
 
-	function a_star(state:GridState, start:FlxPoint, goal:FlxPoint, never_valid:Bool = false):Array<FlxPoint>
-	{
-		var open_set:Array<FlxPoint> = [start];
-		var came_from:Map<FlxPoint, FlxPoint> = new Map<FlxPoint, FlxPoint>();
-		var visited:Array<FlxPoint> = [];
-
-		var gScore:Map<FlxPoint, Float> = new Map<FlxPoint, Float>();
-		gScore[start] = 0;
-
-		var fScore:Map<FlxPoint, Float> = new Map<FlxPoint, Float>();
-		fScore[start] = h(start, start);
-
-		while (open_set.length > 0)
-		{
-			var current:FlxPoint = get_lowest_f(open_set, fScore);
-
-			visited.push(current);
-
-			if (!never_valid && start.x == goal.x && start.y == goal.y)
-				return reconstruct_path(came_from, current);
-
-			open_set.remove(current);
-
-			for (neighbor in get_neighbors(open_set, current, state))
-			{
-				trace(neighbor);
-
-				var tentative_gscore:Float = gScore[current] + Utils.getDistance(current, neighbor);
-
-				// inits for empty
-				gScore[neighbor] = gScore[neighbor] != null ? gScore[neighbor] : tentative_gscore;
-				fScore[neighbor] = fScore[neighbor] != null ? fScore[neighbor] : h(start, neighbor);
-				came_from[neighbor] = came_from[neighbor] != null ? came_from[neighbor] : current;
-
-				trace(tentative_gscore, gScore[neighbor]);
-
-				if (set_contains_point(open_set, neighbor))
-				{
-					if (tentative_gscore < gScore[neighbor])
-					{
-						came_from[neighbor] = current;
-						gScore[neighbor] = tentative_gscore;
-						fScore[neighbor] = gScore[neighbor] + h(start, neighbor);
-					}
-				}
-				else
-				{
-					open_set.push(neighbor);
-				}
-			}
-		}
-
-		return never_valid ? open_set : visited;
-	}
-
-	function get_neighbors(set:Array<FlxPoint>, current:FlxPoint, state:GridState):Array<FlxPoint>
+	function get_neighbors(state:GridState, current:FlxPoint):Array<FlxPoint>
 	{
 		var neighbors:Array<FlxPoint> = [];
 
@@ -147,7 +90,7 @@ class Unit extends Actor
 					new_neighbor.add(0, 1);
 			}
 			var tile:Int = state.grid.getTile(Math.floor(new_neighbor.x), Math.floor(new_neighbor.y));
-			if (tile <= 999 && tile >= 0)
+			if (tile >= 0 && tile < 1)
 			{
 				// TODO: Set to actual collision
 				neighbors.push(new_neighbor);
@@ -159,7 +102,6 @@ class Unit extends Actor
 
 	function set_contains_point(set:Array<FlxPoint>, point:FlxPoint):Bool
 	{
-		// trace(set, point);
 		for (p in set)
 		{
 			if (p.x == point.x && p.y == point.y)
@@ -168,33 +110,10 @@ class Unit extends Actor
 		return false;
 	}
 
-	/**dumb heuristic**/
+	/**manhatten heuristic**/
 	function h(start:FlxPoint, node:FlxPoint):Float
 	{
 		return Utils.getDistance(start, node);
-	}
-
-	function reconstruct_path(came_from:Map<FlxPoint, FlxPoint>, current:FlxPoint)
-	{
-		// TODO: Implement (lol)
-		return [];
-	}
-
-	function get_lowest_f(open_set:Array<FlxPoint>, fScore:Map<FlxPoint, Float>):FlxPoint
-	{
-		var minimum_score:Float = fScore.get(open_set[0]);
-		var selected_f:FlxPoint = open_set[0];
-
-		for (f in open_set)
-		{
-			if (minimum_score < fScore.get(f))
-			{
-				minimum_score = fScore.get(f);
-				selected_f = f;
-			}
-		}
-
-		return selected_f;
 	}
 
 	function teleport(X:Float, Y:Float)

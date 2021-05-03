@@ -6,6 +6,18 @@ class Grill extends Unit
 	{
 		super(X, Y);
 
+		team = 1;
+		speed = 3;
+
 		loadAllFromAnimationSet("girl");
+	}
+
+	override function update(elapsed:Float)
+	{
+		snap_to_grid();
+
+		SELECTED ? anim("move") : anim("idle");
+
+		super.update(elapsed);
 	}
 }

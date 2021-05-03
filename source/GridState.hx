@@ -6,6 +6,23 @@ typedef GridStateTurn =
 	move_y:Int
 }
 
+typedef SearchNode =
+{
+	visited:Bool,
+	distance:Int,
+	x:Int,
+	y:Int
+}
+
+typedef UnitData =
+{
+	x:Int,
+	y:Int,
+	team:Int,
+	speed:Int,
+	u_id:Int
+}
+
 class GridState
 {
 	var turns:Array<GridStateTurn> = [];
@@ -19,7 +36,7 @@ class GridState
 
 	public function new()
 	{
-		grid = new GridArray(PlayState.self.level.col.getData(true));
+		grid = new GridArray(PlayState.self.level.col.getData(true), unit_data_from_group(PlayState.self.units));
 	}
 
 	public function update()
@@ -53,41 +70,31 @@ class GridState
 			move_y: -1
 		};
 	}
+
+	function unit_data_from_group(units:FlxTypedGroup<Unit>):Array<UnitData>
+	{
+		var data_array:Array<UnitData> = [];
+		for (u in units)
+			data_array.push(u.get_unit_data());
+		return data_array;
+	}
 }
 
 class GridArray
 {
-	var array:Array<Int> = [];
-	var width_in_tiles:Int = 0;
-	var height_in_tiles:Int = 0;
+	public var array:Array<Int> = [];
+	public var units:Array<UnitData> = [];
 
-	public function new(ArrayCopy:Array<Int>)
+	public var width_in_tiles:Int = 0;
+	public var height_in_tiles:Int = 0;
+
+	public function new(ArrayCopy:Array<Int>, units_array:Array<UnitData>)
 	{
 		array = ArrayCopy;
+		units = units_array;
+
 		width_in_tiles = PlayState.self.level.widthInTiles;
 		height_in_tiles = PlayState.self.level.heightInTiles;
-
-		var indexes:Array<Int> = [];
-
-		/*
-			for (i in 0...array.length)
-			{
-				if (array[i] == 1)
-				{
-					var square:FlxSpriteExt = new FlxSpriteExt();
-					var point:FlxPoint = PlayState.self.level.getTileCoordsByIndex(i, false);
-					square.setPosition(point.x, point.y);
-					square.makeGraphic(32, 32, FlxColor.RED);
-					square.alpha = 0.25;
-
-					indexes.push(i);
-
-					PlayState.self.add(square);
-				}
-			}
-		 */
-
-		trace(indexes);
 	}
 
 	public function getTile(X:Int, Y:Int)
@@ -95,5 +102,25 @@ class GridArray
 		if (X < 0 || X > width_in_tiles || Y < 0 || Y > height_in_tiles)
 			return -1;
 		return array[Y * width_in_tiles + X];
+	}
+
+	public function getTileTeam(X:Int, Y:Int)
+	{
+		for (u in units)
+		{
+			if (u.x == X && u.y == Y)
+				return u.team;
+		}
+		return 0;
+	}
+
+	public function new_node(x:Int, y:Int):SearchNode
+	{
+		return {
+			visited: false,
+			distance: 0,
+			x: x,
+			y: y
+		};
 	}
 }

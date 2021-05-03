@@ -1,5 +1,8 @@
 package actors;
 
+import GridState.SearchNode;
+import GridState.UnitData;
+import flixel.text.FlxText;
 import flixel.tile.FlxBaseTilemap.FlxTilemapDiagonalPolicy;
 
 class Unit extends Actor
@@ -10,9 +13,16 @@ class Unit extends Actor
 
 	var movement_options:Array<FlxPoint> = new Array<FlxPoint>();
 
+	var u_id:Int = 0;
+
+	static var total_ids:Int = 0;
+
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
+
+		u_id = total_ids + 1;
+		total_ids++;
 
 		PlayState.self.units.add(this);
 	}
@@ -55,44 +65,66 @@ class Unit extends Actor
 
 	function bfs(state:GridState, start:FlxPoint, goal:FlxPoint):Array<FlxPoint>
 	{
-		var open_set:Array<FlxPoint> = [start];
-		var visited:Array<FlxPoint> = [];
-		var current:FlxPoint;
+		var open_set:Array<SearchNode> = [state.grid.new_node(Math.floor(start.x), Math.floor(start.y))];
+		var visited:Array<SearchNode> = [];
+		var current:SearchNode;
 
 		while (open_set.length > 0)
 		{
 			current = open_set.pop();
 			visited.push(current);
-			for (neighbor in get_neighbors(state, current))
-				if (!set_contains_point(visited, neighbor) && h(start, neighbor) <= speed)
+			for (neighbor in get_neighbors(state, current, team))
+				if (!set_contains_node(visited, neighbor) && neighbor.distance <= speed)
+				{
+					var text:FlxText = new FlxText(neighbor.x * level.tile_size, neighbor.y * level.tile_size, "" + neighbor.distance);
+					PlayState.self.add(text);
 					open_set.push(neighbor);
+				}
 		}
 
-		return visited;
+		var response_array:Array<FlxPoint> = [];
+
+		for (v in visited)
+		{
+			var VALID_VISITED:Bool = true;
+			for (u in state.grid.units)
+				if (u.x == v.x && u.y == v.y)
+					VALID_VISITED = false;
+			if (VALID_VISITED)
+				response_array.push(new FlxPoint(v.x, v.y));
+		}
+
+		return response_array;
 	}
 
-	function get_neighbors(state:GridState, current:FlxPoint):Array<FlxPoint>
+	function get_neighbors(state:GridState, current:SearchNode, team:Int):Array<SearchNode>
 	{
-		var neighbors:Array<FlxPoint> = [];
+		var neighbors:Array<SearchNode> = [];
 
 		for (i in 0...4)
 		{
-			var new_neighbor:FlxPoint = new FlxPoint(current.x, current.y);
+			var new_neighbor:SearchNode = state.grid.new_node(current.x, current.y);
 			switch (i)
 			{
 				case 0:
-					new_neighbor.add(-1, 0);
+					new_neighbor.x += -1;
 				case 1:
-					new_neighbor.add(1, 0);
+					new_neighbor.x += 1;
 				case 2:
-					new_neighbor.add(0, -1);
+					new_neighbor.y += -1;
 				case 3:
-					new_neighbor.add(0, 1);
+					new_neighbor.y += 1;
 			}
+
+			new_neighbor.distance = current.distance + 1;
+
 			var tile:Int = state.grid.getTile(Math.floor(new_neighbor.x), Math.floor(new_neighbor.y));
-			if (tile >= 0 && tile < 1)
+			var tile_team:Int = state.grid.getTileTeam(new_neighbor.x, new_neighbor.y);
+
+			var VALID_TEAM:Bool = tile_team == team || tile_team == 0;
+
+			if (tile >= 0 && tile < 1 && VALID_TEAM)
 			{
-				// TODO: Set to actual collision
 				neighbors.push(new_neighbor);
 			}
 		}
@@ -100,11 +132,11 @@ class Unit extends Actor
 		return neighbors;
 	}
 
-	function set_contains_point(set:Array<FlxPoint>, point:FlxPoint):Bool
+	function set_contains_node(set:Array<SearchNode>, node:SearchNode):Bool
 	{
-		for (p in set)
+		for (s in set)
 		{
-			if (p.x == point.x && p.y == point.y)
+			if (s.x == node.x && s.y == node.y)
 				return true;
 		}
 		return false;
@@ -120,6 +152,7 @@ class Unit extends Actor
 	{
 		tile_position.x = Math.floor(X);
 		tile_position.y = Math.floor(Y);
+		PlayState.self.regenerate_grid();
 	}
 
 	public function select_position()
@@ -144,5 +177,16 @@ class Unit extends Actor
 				return;
 			}
 		}
+	}
+
+	public function get_unit_data():UnitData
+	{
+		return {
+			x: Math.floor(tile_position.x),
+			y: Math.floor(tile_position.y),
+			team: team,
+			speed: speed,
+			u_id: u_id
+		};
 	}
 }

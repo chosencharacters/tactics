@@ -36,6 +36,11 @@ class PlayState extends BaseState
 		current_grid_state = new GridState();
 	}
 
+	public function regenerate_grid()
+	{
+		current_grid_state = new GridState();
+	}
+
 	function create_level()
 	{
 		add(level = new Level(new LdtkProject(), "Map_0", AssetPaths.forest_tileset__png));

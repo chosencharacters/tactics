@@ -45,6 +45,8 @@ class Level extends LDTKLevel
 			new Player(entity.cx, entity.cy);
 		for (entity in data.l_Entities.all_Grill.iterator())
 			new Grill(entity.cx, entity.cy);
+		for (entity in data.l_Entities.all_Slime.iterator())
+			new Slime(entity.cx, entity.cy);
 
 		/*
 			for (index in 0...col.totalTiles)

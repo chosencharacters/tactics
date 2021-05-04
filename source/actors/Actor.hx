@@ -7,7 +7,7 @@ class Actor extends FlxSpriteExt
 
 	var level:Level;
 
-	var team:Int = 0;
+	public var team:Int = 0;
 
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{

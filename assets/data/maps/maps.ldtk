@@ -9,7 +9,7 @@
 		"url": "https://ldtk.io"
 	},
 	"jsonVersion": "0.9.3",
-	"nextUid": 28,
+	"nextUid": 29,
 	"worldLayout": "GridVania",
 	"worldGridWidth": 640,
 	"worldGridHeight": 320,
@@ -450,6 +450,31 @@
 			"pivotX": 0,
 			"pivotY": 0,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "Slime",
+			"uid": 28,
+			"tags": ["neutral"],
+			"width": 32,
+			"height": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"keepAspectRatio": false,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#94D9B3",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 23,
+			"tileId": 2,
+			"tileRenderMode": "FitInside",
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -487,7 +512,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": { "opaqueTiles": "0000000000000000", "averageColors": "4756486800000000000000000000000000000000000000000000000000000000" }
+			"cachedPixelData": { "opaqueTiles": "0000000000000000", "averageColors": "47564868639c0000000000000000000000000000000000000000000000000000" }
 		}
 	], "enums": [], "externalEnums": [], "levelFields": [] },
 	"levels": [
@@ -546,13 +571,24 @@
 						},
 						{
 							"__identifier": "Player",
-							"__grid": [7,4],
+							"__grid": [2,4],
 							"__pivot": [0,0],
 							"__tile": { "tilesetUid": 23, "srcRect": [0,0,32,32] },
 							"width": 32,
 							"height": 32,
 							"defUid": 22,
-							"px": [224,128],
+							"px": [64,128],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [5,4],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [160,128],
 							"fieldInstances": []
 						}
 					]

@@ -1,5 +1,7 @@
 package actors;
 
+import actors.Weapon.WeaponAttackType;
+
 class Player extends Unit
 {
 	public function new(?X:Float = 0, ?Y:Float = 0)
@@ -10,6 +12,18 @@ class Player extends Unit
 		speed = 3;
 
 		loadAllFromAnimationSet("boy");
+
+		weapons = [
+			{
+				w_id: Utils.get_unused_id(),
+				name: "gun",
+				attack_type: WeaponAttackType.RANGED,
+				str: 1,
+				range: 3,
+				blindspot: 0,
+				knockback: 3
+			}
+		];
 	}
 
 	override function update(elapsed:Float)

@@ -39,9 +39,10 @@ class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 		add(square);
 	}
 
-	public function select_squares(positions:Array<FlxPoint>)
+	public function select_squares(positions:Array<FlxPoint>, attack_highlights:Bool = false)
 	{
-		clear_squares();
+		if (!attack_highlights)
+			clear_squares();
 
 		var transparent_square_alpha:Float = base_alpha / 8;
 
@@ -64,8 +65,12 @@ class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 				}
 				if (square != null)
 				{
-					square.visible = true;
-					square.alpha = transparent_square_alpha;
+					if (!attack_highlights)
+					{
+						square.visible = true;
+						square.alpha = transparent_square_alpha;
+					}
+					square.color = FlxColor.WHITE;
 				}
 			}
 		}
@@ -75,7 +80,8 @@ class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 		{
 			var square:FlxSpriteExt = get_square(Math.floor(pos.x), Math.floor(pos.y));
 			square.visible = true;
-			square.alpha = base_alpha;
+			square.alpha = attack_highlights ? 1 : base_alpha;
+			square.color = attack_highlights ? FlxColor.RED : FlxColor.WHITE;
 		}
 	}
 

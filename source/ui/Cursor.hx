@@ -50,7 +50,8 @@ class Cursor extends FlxSpriteExt
 				unit.SELECTED = false;
 			for (unit in PlayState.self.units)
 			{
-				if (unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
+				var TEAM_OK:Bool = unit.team == PlayState.self.current_grid_state.active_team;
+				if (TEAM_OK && unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
 				{
 					unit.select();
 					return;

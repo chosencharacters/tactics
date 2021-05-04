@@ -259,4 +259,16 @@ class Utils
 		}
 		return false;
 	}
+
+	static var current_id_total:Int = 25600;
+
+	/**
+	 * Just gets an unused id
+	 * @return Int a new id
+	 */
+	public static function get_unused_id():Int
+	{
+		current_id_total++;
+		return current_id_total;
+	}
 }

@@ -2,6 +2,7 @@ package actors;
 
 import GridState.SearchNode;
 import GridState.UnitData;
+import actors.Weapon.WeaponDef;
 import flixel.text.FlxText;
 import flixel.tile.FlxBaseTilemap.FlxTilemapDiagonalPolicy;
 import flixel.util.FlxPath;
@@ -13,27 +14,40 @@ class Unit extends Actor
 
 	var speed:Int = 0;
 
+	var movement_left:Int = -1;
+
 	var movement_options:Array<FlxPoint> = new Array<FlxPoint>();
+	var movement_options_nodes:Array<SearchNode> = new Array<SearchNode>();
+
+	var attack_options:Array<SearchNode> = new Array<SearchNode>();
+	var immediate_attack_options:Array<SearchNode> = new Array<SearchNode>();
+
 	var movement_path:Array<FlxPoint> = new Array<FlxPoint>();
 
-	var u_id:Int = 0;
+	public var u_id:Int = 0;
 
-	static var total_ids:Int = 0;
+	var weapons:Array<WeaponDef> = [];
 
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
 
-		u_id = total_ids + 1;
-		total_ids++;
+		u_id = Utils.get_unused_id();
 
 		PlayState.self.units.add(this);
 	}
 
 	override function update(elapsed:Float)
 	{
+		if (movement_left <= -1)
+			new_turn();
 		select_position();
 		super.update(elapsed);
+	}
+
+	function new_turn()
+	{
+		movement_left = speed;
 	}
 
 	public function realize_move(state:GridState, ?destination:FlxPoint)
@@ -94,6 +108,11 @@ class Unit extends Actor
 		}
 	}
 
+	public function realize_attack(state:GridState, target_unit:Unit, weapon:WeaponDef)
+	{
+		state.attack(get_unit_data(), target_unit.get_unit_data(), weapon);
+	}
+
 	function snap_to_grid()
 	{
 		if (REALIZING)
@@ -115,15 +134,34 @@ class Unit extends Actor
 		var start_time:Float = Sys.time();
 
 		var valid_moves:Array<FlxPoint> = [];
-		var valid_raw:Array<SearchNode> = [];
+		var valid_attacks:Array<FlxPoint> = [];
 
-		for (n in state.grid.bfs_movement_options(start, start, get_unit_data()))
+		movement_options_nodes = state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
+
+		attack_options = state.grid.calculate_all_attack_options(get_unit_data(), movement_options_nodes, speed != movement_left);
+
+		for (n in movement_options_nodes)
 			valid_moves.push(new FlxPoint(n.x, n.y));
 
+		for (n in attack_options)
+			valid_attacks.push(new FlxPoint(n.x, n.y));
+
 		if (auto_highlight)
+		{
 			PlayState.self.select_squares.select_squares(valid_moves);
+			PlayState.self.select_squares.select_squares(valid_attacks, true);
+		}
 
 		trace("TIME: " + (Sys.time() - start_time));
+
+		for (n in movement_options_nodes)
+			Utils.add_blank_tile_square(new FlxPoint(n.x * level.tile_size, n.y * level.tile_size));
+		for (n in movement_options_nodes)
+		{
+			var text:FlxText = new FlxText(n.x * level.tile_size, n.y * level.tile_size, n.distance + "");
+			text.color = FlxColor.BLACK;
+			FlxG.state.add(text);
+		}
 
 		return valid_moves;
 	}
@@ -152,6 +190,7 @@ class Unit extends Actor
 			{
 				// teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
 				PlayState.self.current_grid_state.add_move_turn(this, CURSOR_POSITION.x, CURSOR_POSITION.y);
+				movement_left -= movement_options_nodes[movement_options.indexOf(pos)].distance;
 				SELECTED = false;
 				Ctrl.cursor_select = false;
 				PlayState.self.select_squares.select_squares([]);
@@ -167,7 +206,17 @@ class Unit extends Actor
 			y: Math.floor(tile_position.y),
 			team: team,
 			speed: speed,
-			u_id: u_id
+			movement_left: movement_left,
+			u_id: u_id,
+			weapons: weapons,
+			health: health
 		};
+	}
+
+	public function write_from_unit_data(data:UnitData)
+	{
+		tile_position.x = data.x;
+		tile_position.y = data.y;
+		snap_to_grid();
 	}
 }

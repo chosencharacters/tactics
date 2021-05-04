@@ -16,7 +16,8 @@ class Grill extends Unit
 	{
 		snap_to_grid();
 
-		SELECTED ? anim("move") : anim("idle");
+		if (!REALIZING)
+			SELECTED ? anim("move") : anim("idle");
 
 		super.update(elapsed);
 	}

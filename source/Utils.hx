@@ -229,4 +229,12 @@ class Utils
 			nanos = "0" + nanos;
 		return minutes + ":" + seconds + ":" + nanos;
 	}
+
+	public static function add_blank_tile_square(x:Float, y:Float, color:FlxColor = FlxColor.WHITE)
+	{
+		var square:FlxSpriteExt = new FlxSpriteExt(x, y);
+		square.makeGraphic(PlayState.self.level.tile_size, PlayState.self.level.tile_size, color);
+		square.alpha = 0.25;
+		FlxG.state.add(square);
+	}
 }

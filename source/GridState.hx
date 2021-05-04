@@ -25,7 +25,8 @@ typedef UnitData =
 
 class GridState
 {
-	var turns:Array<GridStateTurn> = [];
+	public var turns:Array<GridStateTurn> = [];
+
 	var turn_index:Int = 0;
 	var score:Int = 0;
 
@@ -52,9 +53,11 @@ class GridState
 			switch (turn.turn_type)
 			{
 				case "move":
-					turn.unit.realize_move(FlxPoint.weak(turn.move_x, turn.move_y));
+					turn.unit.realize_move(this, FlxPoint.weak(turn.move_x, turn.move_y));
 			}
 		}
+		if (turns.length <= 0)
+			PlayState.self.regenerate_grid();
 	}
 
 	public function add_move_turn(unit:Unit, move_x:Float, move_y:Float, realize_state_set:Bool = true)

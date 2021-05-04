@@ -4,6 +4,7 @@ import GridState.SearchNode;
 import GridState.UnitData;
 import flixel.text.FlxText;
 import flixel.tile.FlxBaseTilemap.FlxTilemapDiagonalPolicy;
+import flixel.util.FlxPath;
 
 class Unit extends Actor
 {
@@ -13,6 +14,7 @@ class Unit extends Actor
 	var speed:Int = 0;
 
 	var movement_options:Array<FlxPoint> = new Array<FlxPoint>();
+	var movement_path:Array<FlxPoint> = new Array<FlxPoint>();
 
 	var u_id:Int = 0;
 
@@ -31,35 +33,63 @@ class Unit extends Actor
 	override function update(elapsed:Float)
 	{
 		select_position();
-		realize_move();
 		super.update(elapsed);
 	}
 
-	public function realize_move(?destination:FlxPoint)
+	public function realize_move(state:GridState, ?destination:FlxPoint)
 	{
 		if (destination != null)
+			destination.set(destination.x * level.tile_size, destination.y * level.tile_size);
+
+		if (destination != null && !REALIZING)
 		{
-			move_tile_position.set(destination.x, destination.y);
+			var my_position:FlxPoint = new FlxPoint(tile_position.x * level.tile_size, tile_position.y * level.tile_size);
+			movement_path = PlayState.self.level.col.findPath(my_position, destination, false, FlxTilemapDiagonalPolicy.NONE);
+
+			for (m in 0...movement_path.length)
+				if (m > 0)
+					movement_path[m].subtract(level.tile_size * .5, level.tile_size * .5);
+
+			move_tile_position = movement_path.shift();
 			REALIZING = true;
 		}
+
 		if (!REALIZING)
 			return;
+
 		if (move_tile_position.x != -1 && move_tile_position.y != -1)
 		{
-			var NOT_ON_X:Bool = move_tile_position.x > x || move_tile_position.x < x;
-			var NOT_ON_Y:Bool = move_tile_position.y > y || move_tile_position.y < y;
+			anim("move");
+			var vel:Int = 300;
+
+			velocity.set(0, 0);
+			var tile_x:Int = Math.floor(move_tile_position.x + level.tile_size / 2);
+			var my_x:Int = Math.floor(x + width / 2);
+
+			var tile_y:Int = Math.floor(move_tile_position.y + level.tile_size - height);
+			var my_y:Int = Math.floor(y);
+
+			var NOT_ON_X:Bool = tile_x < my_x - 4 || tile_x > my_x + 4;
+			var NOT_ON_Y:Bool = tile_y < my_y - 4 || tile_y > my_y + 4;
 			if (NOT_ON_X)
 			{
-				velocity.x = move_tile_position.x > x ? 100 : -100;
+				velocity.x = tile_x < my_x + 4 ? -vel : vel;
+				flipX = velocity.x < 0;
 			}
 			else if (NOT_ON_Y)
 			{
-				velocity.y = move_tile_position.y > y ? 100 : -100;
+				x = tile_x - width / 2;
+				velocity.y = tile_y < my_y ? -vel : vel;
 			}
 			else
 			{
-				velocity.set(0, 0);
-				REALIZING = false;
+				tile_position.set(move_tile_position.x / level.tile_size, move_tile_position.y / level.tile_size);
+				if (movement_path.length <= 0)
+					state.turns.shift();
+				if (movement_path.length <= 0)
+					REALIZING = false;
+				else
+					move_tile_position = movement_path.shift();
 			}
 		}
 	}

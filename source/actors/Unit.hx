@@ -1,5 +1,6 @@
 package actors;
 
+import GridState.GridStateTurn;
 import GridState.SearchNode;
 import GridState.UnitData;
 import actors.Weapon.WeaponDef;
@@ -50,19 +51,12 @@ class Unit extends Actor
 		movement_left = speed;
 	}
 
-	public function realize_move(state:GridState, ?destination:FlxPoint)
+	public function realize_move(state:GridState, turn:GridStateTurn)
 	{
-		if (destination != null)
-			destination.set(destination.x * level.tile_size, destination.y * level.tile_size);
-
-		if (destination != null && !REALIZING)
+		if (!REALIZING && turn.path.length > 0)
 		{
-			var my_position:FlxPoint = new FlxPoint(tile_position.x * level.tile_size, tile_position.y * level.tile_size);
-			movement_path = PlayState.self.level.col.findPath(my_position, destination, false, FlxTilemapDiagonalPolicy.NONE);
-
-			for (m in 0...movement_path.length)
-				if (m > 0)
-					movement_path[m].subtract(level.tile_size * .5, level.tile_size * .5);
+			for (node in turn.path)
+				movement_path.push(FlxPoint.weak(node.x * level.tile_size, node.y * level.tile_size));
 
 			move_tile_position = movement_path.shift();
 			REALIZING = true;
@@ -154,13 +148,16 @@ class Unit extends Actor
 
 		trace("TIME: " + (Sys.time() - start_time));
 
-		for (n in movement_options_nodes)
-			Utils.add_blank_tile_square(new FlxPoint(n.x * level.tile_size, n.y * level.tile_size));
-		for (n in movement_options_nodes)
+		if (Main.DEBUG_PATH)
 		{
-			var text:FlxText = new FlxText(n.x * level.tile_size, n.y * level.tile_size, n.distance + "");
-			text.color = FlxColor.BLACK;
-			FlxG.state.add(text);
+			for (n in movement_options_nodes)
+				Utils.add_blank_tile_square(new FlxPoint(n.x * level.tile_size, n.y * level.tile_size));
+			for (n in movement_options_nodes)
+			{
+				var text:FlxText = new FlxText(n.x * level.tile_size, n.y * level.tile_size, n.distance + "");
+				text.color = FlxColor.BLACK;
+				FlxG.state.add(text);
+			}
 		}
 
 		return valid_moves;
@@ -189,7 +186,7 @@ class Unit extends Actor
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
 				// teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
-				PlayState.self.current_grid_state.add_move_turn(this, CURSOR_POSITION.x, CURSOR_POSITION.y);
+				PlayState.self.current_grid_state.add_move_turn(this, movement_options_nodes[movement_options.indexOf(pos)]);
 				movement_left -= movement_options_nodes[movement_options.indexOf(pos)].distance;
 				SELECTED = false;
 				Ctrl.cursor_select = false;

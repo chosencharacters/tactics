@@ -570,17 +570,6 @@
 							"fieldInstances": []
 						},
 						{
-							"__identifier": "Player",
-							"__grid": [2,4],
-							"__pivot": [0,0],
-							"__tile": { "tilesetUid": 23, "srcRect": [0,0,32,32] },
-							"width": 32,
-							"height": 32,
-							"defUid": 22,
-							"px": [64,128],
-							"fieldInstances": []
-						},
-						{
 							"__identifier": "Slime",
 							"__grid": [5,4],
 							"__pivot": [0,0],
@@ -589,6 +578,17 @@
 							"height": 32,
 							"defUid": 28,
 							"px": [160,128],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Player",
+							"__grid": [4,4],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [0,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 22,
+							"px": [128,128],
 							"fieldInstances": []
 						}
 					]

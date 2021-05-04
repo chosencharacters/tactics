@@ -9,5 +9,6 @@
 			"source.sortImports": true
 		}
 	},
-	"haxe.enableExtendedIndentation": true
+	"haxe.enableExtendedIndentation": true,
+	"python.pythonPath": "C:\\Users\\squid\\AppData\\Local\\Programs\\Python\\Python39\\python.exe"
 }

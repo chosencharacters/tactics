@@ -84,13 +84,12 @@ class GridState
 			PlayState.self.regenerate_grid();
 	}
 
-	public function add_move_turn(unit:Unit, move_x:Float, move_y:Float, realize_state_set:Bool = true)
+	public function add_move_turn(unit:Unit, node:SearchNode, realize_state_set:Bool = true)
 	{
 		var turn:GridStateTurn = empty_turn();
 		turn.source_unit = unit;
-		turn.move_x = Math.floor(move_x);
-		turn.move_y = Math.floor(move_y);
 		turn.turn_type = "move";
+		turn.path = node.path.concat([node]);
 
 		turns.push(turn);
 
@@ -117,7 +116,8 @@ class GridState
 			target_unit: null,
 			move_x: -1,
 			move_y: -1,
-			weapon: null
+			weapon: null,
+			path: []
 		};
 	}
 

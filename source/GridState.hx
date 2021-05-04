@@ -47,10 +47,17 @@ class GridState
 
 	function realize_state()
 	{
-		for (turn in turns) {}
+		for (turn in turns)
+		{
+			switch (turn.turn_type)
+			{
+				case "move":
+					turn.unit.realize_move(FlxPoint.weak(turn.move_x, turn.move_y));
+			}
+		}
 	}
 
-	function add_move_turn(unit:Unit, move_x:Float, move_y:Float)
+	public function add_move_turn(unit:Unit, move_x:Float, move_y:Float, realize_state_set:Bool = true)
 	{
 		var turn:GridStateTurn = empty_turn();
 		turn.unit = unit;
@@ -59,6 +66,8 @@ class GridState
 		turn.turn_type = "move";
 
 		turns.push(turn);
+
+		realizing_state = realizing_state || realize_state_set;
 	}
 
 	function empty_turn():GridStateTurn
@@ -99,7 +108,7 @@ class GridArray
 
 	public function getTile(X:Int, Y:Int)
 	{
-		if (X < 0 || X > width_in_tiles || Y < 0 || Y > height_in_tiles)
+		if (X < 0 || X >= width_in_tiles || Y < 0 || Y >= height_in_tiles)
 			return -1;
 		return array[Y * width_in_tiles + X];
 	}

@@ -8,6 +8,7 @@ import flixel.tile.FlxBaseTilemap.FlxTilemapDiagonalPolicy;
 class Unit extends Actor
 {
 	public var SELECTED:Bool = false;
+	public var REALIZING:Bool = false;
 
 	var speed:Int = 0;
 
@@ -30,11 +31,43 @@ class Unit extends Actor
 	override function update(elapsed:Float)
 	{
 		select_position();
+		realize_move();
 		super.update(elapsed);
+	}
+
+	public function realize_move(?destination:FlxPoint)
+	{
+		if (destination != null)
+		{
+			move_tile_position.set(destination.x, destination.y);
+			REALIZING = true;
+		}
+		if (!REALIZING)
+			return;
+		if (move_tile_position.x != -1 && move_tile_position.y != -1)
+		{
+			var NOT_ON_X:Bool = move_tile_position.x > x || move_tile_position.x < x;
+			var NOT_ON_Y:Bool = move_tile_position.y > y || move_tile_position.y < y;
+			if (NOT_ON_X)
+			{
+				velocity.x = move_tile_position.x > x ? 100 : -100;
+			}
+			else if (NOT_ON_Y)
+			{
+				velocity.y = move_tile_position.y > y ? 100 : -100;
+			}
+			else
+			{
+				velocity.set(0, 0);
+				REALIZING = false;
+			}
+		}
 	}
 
 	function snap_to_grid()
 	{
+		if (REALIZING)
+			return;
 		var cords:FlxPoint = FlxPoint.weak(tile_position.x * level.tile_size, tile_position.y * level.tile_size);
 		cords.x += PlayState.self.level.tile_size / 2 - width / 2;
 		cords.y += PlayState.self.level.tile_size - height;
@@ -75,11 +108,7 @@ class Unit extends Actor
 			visited.push(current);
 			for (neighbor in get_neighbors(state, current, team))
 				if (!set_contains_node(visited, neighbor) && neighbor.distance <= speed)
-				{
-					var text:FlxText = new FlxText(neighbor.x * level.tile_size, neighbor.y * level.tile_size, "" + neighbor.distance);
-					PlayState.self.add(text);
 					open_set.push(neighbor);
-				}
 		}
 
 		var response_array:Array<FlxPoint> = [];
@@ -170,7 +199,8 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
+				// teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
+				PlayState.self.current_grid_state.add_move_turn(this, CURSOR_POSITION.x, CURSOR_POSITION.y);
 				SELECTED = false;
 				Ctrl.cursor_select = false;
 				PlayState.self.select_squares.select_squares([]);

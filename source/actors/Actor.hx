@@ -3,6 +3,7 @@ package actors;
 class Actor extends FlxSpriteExt
 {
 	public var tile_position:FlxPoint = new FlxPoint();
+	public var move_tile_position:FlxPoint = new FlxPoint();
 
 	var level:Level;
 

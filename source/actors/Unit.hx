@@ -115,8 +115,10 @@ class Unit extends Actor
 		var start_time:Float = Sys.time();
 
 		var valid_moves:Array<FlxPoint> = [];
+		var valid_raw:Array<SearchNode> = [];
 
-		valid_moves = bfs(state, start, start);
+		for (n in state.grid.bfs_movement_options(start, start, get_unit_data()))
+			valid_moves.push(new FlxPoint(n.x, n.y));
 
 		if (auto_highlight)
 			PlayState.self.select_squares.select_squares(valid_moves);
@@ -124,87 +126,6 @@ class Unit extends Actor
 		trace("TIME: " + (Sys.time() - start_time));
 
 		return valid_moves;
-	}
-
-	function bfs(state:GridState, start:FlxPoint, goal:FlxPoint):Array<FlxPoint>
-	{
-		var open_set:Array<SearchNode> = [state.grid.new_node(Math.floor(start.x), Math.floor(start.y))];
-		var visited:Array<SearchNode> = [];
-		var current:SearchNode;
-
-		while (open_set.length > 0)
-		{
-			current = open_set.pop();
-			visited.push(current);
-			for (neighbor in get_neighbors(state, current, team))
-				if (!set_contains_node(visited, neighbor) && neighbor.distance <= speed)
-					open_set.push(neighbor);
-		}
-
-		var response_array:Array<FlxPoint> = [];
-
-		for (v in visited)
-		{
-			var VALID_VISITED:Bool = true;
-			for (u in state.grid.units)
-				if (u.x == v.x && u.y == v.y)
-					VALID_VISITED = false;
-			if (VALID_VISITED)
-				response_array.push(new FlxPoint(v.x, v.y));
-		}
-
-		return response_array;
-	}
-
-	function get_neighbors(state:GridState, current:SearchNode, team:Int):Array<SearchNode>
-	{
-		var neighbors:Array<SearchNode> = [];
-
-		for (i in 0...4)
-		{
-			var new_neighbor:SearchNode = state.grid.new_node(current.x, current.y);
-			switch (i)
-			{
-				case 0:
-					new_neighbor.x += -1;
-				case 1:
-					new_neighbor.x += 1;
-				case 2:
-					new_neighbor.y += -1;
-				case 3:
-					new_neighbor.y += 1;
-			}
-
-			new_neighbor.distance = current.distance + 1;
-
-			var tile:Int = state.grid.getTile(Math.floor(new_neighbor.x), Math.floor(new_neighbor.y));
-			var tile_team:Int = state.grid.getTileTeam(new_neighbor.x, new_neighbor.y);
-
-			var VALID_TEAM:Bool = tile_team == team || tile_team == 0;
-
-			if (tile >= 0 && tile < 1 && VALID_TEAM)
-			{
-				neighbors.push(new_neighbor);
-			}
-		}
-
-		return neighbors;
-	}
-
-	function set_contains_node(set:Array<SearchNode>, node:SearchNode):Bool
-	{
-		for (s in set)
-		{
-			if (s.x == node.x && s.y == node.y)
-				return true;
-		}
-		return false;
-	}
-
-	/**manhatten heuristic**/
-	function h(start:FlxPoint, node:FlxPoint):Float
-	{
-		return Utils.getDistance(start, node);
 	}
 
 	function teleport(X:Float, Y:Float)

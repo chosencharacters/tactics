@@ -1,3 +1,4 @@
+import GridState.SearchNode;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import flixel.text.FlxText;
 import lime.utils.Assets;
@@ -230,11 +231,32 @@ class Utils
 		return minutes + ":" + seconds + ":" + nanos;
 	}
 
-	public static function add_blank_tile_square(x:Float, y:Float, color:FlxColor = FlxColor.WHITE)
+	/**
+	 * Just adds a blank tile transparent square for debugging
+	 * @param position the place to put it
+	 * @param color what color it should be, defaults to white
+	 */
+	public static function add_blank_tile_square(position:FlxPoint, color:FlxColor = FlxColor.WHITE)
 	{
-		var square:FlxSpriteExt = new FlxSpriteExt(x, y);
+		var square:FlxSpriteExt = new FlxSpriteExt(position.x, position.y);
 		square.makeGraphic(PlayState.self.level.tile_size, PlayState.self.level.tile_size, color);
 		square.alpha = 0.25;
 		FlxG.state.add(square);
+	}
+
+	/**
+	 * Does this set contain the SearchNode?
+	 * @param set set to search
+	 * @param node node to search for in set 
+	 * @return Bool does the set contain the node
+	 */
+	public static function set_contains_node(set:Array<SearchNode>, node:SearchNode):Bool
+	{
+		for (s in set)
+		{
+			if (s.x == node.x && s.y == node.y)
+				return true;
+		}
+		return false;
 	}
 }

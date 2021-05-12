@@ -131,6 +131,10 @@ class Unit extends Actor
 		var valid_attacks:Array<FlxPoint> = [];
 
 		movement_options_nodes = state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
+		for (m in movement_options_nodes)
+		{
+			trace(m.path.length);
+		}
 
 		attack_options = state.grid.calculate_all_attack_options(get_unit_data(), movement_options_nodes, speed != movement_left);
 
@@ -187,7 +191,32 @@ class Unit extends Actor
 			{
 				// teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
 				PlayState.self.current_grid_state.add_move_turn(this, movement_options_nodes[movement_options.indexOf(pos)]);
+
 				movement_left -= movement_options_nodes[movement_options.indexOf(pos)].distance;
+
+				SELECTED = false;
+				Ctrl.cursor_select = false;
+				PlayState.self.select_squares.select_squares([]);
+				return;
+			}
+		}
+		for (pos in attack_options)
+		{
+			var CURSOR_MATCH:Bool = CURSOR_POSITION.x == pos.x && CURSOR_POSITION.y == pos.y;
+			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
+			if (CURSOR_MATCH && !SELF_MATCH)
+			{
+				var enemy_unit:Unit = PlayState.self.current_grid_state.find_unit_actual_in_units(pos.unit);
+
+				trace(pos.path);
+				trace(pos.path.length, pos.path[pos.path.length - 1]);
+				trace('attack node path (${pos.x}, ${pos.y}) length: ${pos.path.length}');
+
+				teleport(pos.path[pos.path.length - 1].x, pos.path[pos.path.length - 1].y);
+				PlayState.self.current_grid_state.add_attack_turn(this, enemy_unit, pos.weapon, false);
+
+				movement_left = 0;
+
 				SELECTED = false;
 				Ctrl.cursor_select = false;
 				PlayState.self.select_squares.select_squares([]);

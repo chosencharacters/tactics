@@ -131,28 +131,46 @@ class GridState
 
 	public function attack(source_unit:UnitData, attack_unit:UnitData, weapon:WeaponDef)
 	{
-		source_unit = find_unit_in_units(source_unit);
-		attack_unit = find_unit_in_units(attack_unit);
+		source_unit = find_unit_data_in_units(source_unit);
+		attack_unit = find_unit_data_in_units(attack_unit);
 		attack_unit.health -= weapon.str;
 
 		var HORZ:Bool = source_unit.x < attack_unit.x || source_unit.x > attack_unit.x;
 		var VERT:Bool = source_unit.y < attack_unit.y || source_unit.y > attack_unit.y;
 
+		var kb_x:Int = 0;
+		var kb_y:Int = 0;
+
 		if (HORZ)
-			attack_unit.x = source_unit.x < attack_unit.x ? attack_unit.x - weapon.knockback : attack_unit.x + weapon.knockback;
+			kb_x = source_unit.x < attack_unit.x ? -weapon.knockback : weapon.knockback;
 		if (VERT)
-			attack_unit.y = source_unit.y < attack_unit.y ? attack_unit.y - weapon.knockback : attack_unit.y + weapon.knockback;
+			kb_y = source_unit.y < attack_unit.y ? -weapon.knockback : weapon.knockback;
+
+		var attack_node:SearchNode = grid.getNode(attack_unit.x, attack_unit.y);
+		var kb_line:Array<SearchNode> = grid.draw_line_with_collision(attack_node, 3, kb_x, kb_y);
+
+		if (kb_line.length > 0)
+		{
+			attack_node.x = kb_line[kb_line.length - 1].x;
+			attack_node.y = kb_line[kb_line.length - 1].y;
+		}
 
 		write_state_to_game();
 	}
 
-	function find_unit_in_units(unit:UnitData):UnitData
+	public function find_unit_data_in_units(unit:UnitData):UnitData
 	{
 		for (u in grid.units)
-		{
 			if (u.u_id == unit.u_id)
 				return u;
-		}
+		return null;
+	}
+
+	public function find_unit_actual_in_units(unit:UnitData):Unit
+	{
+		for (u in PlayState.self.units)
+			if (u.u_id == unit.u_id)
+				return u;
 		return null;
 	}
 
@@ -295,14 +313,18 @@ class GridArray
 			current = open_set.shift();
 			current.visited = true;
 			visited.push(current);
-			for (neighbor in get_neighbors(current, unit.team))
-				if (!neighbor.visited && neighbor.distance <= speed)
-				{
-					neighbor.path = current.path.concat([current]);
-					neighbor.distance = neighbor.path.length;
-					if (current.distance < speed)
+			if (current.distance < speed)
+				for (neighbor in get_neighbors(current, unit.team))
+					if (!neighbor.visited)
+					{
+						neighbor.path = current.path.concat([current]);
+						neighbor.distance = neighbor.path.length;
+
+						trace(current.unit);
+						if (neighbor.unit != null)
+							trace('!!!!!!!!!!!!!!!UNIT IS HERE!!!!!!!!!!!!!!!');
 						set_add(open_set, neighbor);
-				}
+					}
 		}
 
 		var response_array:Array<SearchNode> = [];
@@ -340,26 +362,24 @@ class GridArray
 	public function calculate_all_attack_options(unit:UnitData, movement_range:Array<SearchNode>, moved_already:Bool):Array<SearchNode>
 	{
 		var attack_options:Array<SearchNode> = [];
+
 		for (node in movement_range)
 			node.visited = false;
+
 		for (node in movement_range)
-		{
 			attack_options = attack_options.concat(calculate_immediate_attack_options(unit, node, moved_already));
-		}
+
 		return attack_options;
 	}
 
-	public function calculate_immediate_attack_options(unit:UnitData, node:SearchNode, moved_already:Bool = false)
+	public function calculate_immediate_attack_options(unit:UnitData, node:SearchNode, moved_already:Bool = false):Array<SearchNode>
 	{
 		var attack_options:Array<SearchNode> = [];
 
 		for (weapon in unit.weapons)
-		{
 			// can't use artillery weapons if you've already moved
 			if (!(moved_already && weapon.attack_type == WeaponAttackType.ARTILLERY))
-			{
 				for (col in -weapon.range...weapon.range)
-				{
 					for (row in -weapon.range...weapon.range)
 					{
 						var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
@@ -367,12 +387,13 @@ class GridArray
 						{
 							var attack_node:SearchNode = new_node(node.x + col, node.y + row, enemy_unit, weapon);
 							attack_node.attacking_from = node;
+							attack_node.path = node.path.copy();
+							trace('///\nsource node path (${node.x}, ${node.y}) length: ${node.path.length}'
+								+ '\nattack node path (${attack_node.x}, ${attack_node.y}) length: ${attack_node.path.length}\n///');
+
 							attack_options.push(attack_node);
 						}
 					}
-				}
-			}
-		}
 		return attack_options;
 	}
 
@@ -416,6 +437,7 @@ class GridArray
 			}
 
 			var node:SearchNode = getNode(neighbor_x, neighbor_y);
+			trace('${node.x} ${node.y} ${node.unit}');
 			if (node != null)
 			{
 				var VALID_TEAM:Bool = node.unit == null || node.unit.team == team || node.unit.team == 0;
@@ -426,5 +448,26 @@ class GridArray
 		}
 
 		return neighbors;
+	}
+
+	function get_collision(node:SearchNode)
+	{
+		if (collisions.indexOf(node.value) > -1)
+			return false;
+		return true;
+	}
+
+	public function draw_line_with_collision(start:SearchNode, distance:Int, vel_x:Int, vel_y:Int):Array<SearchNode>
+	{
+		var current:SearchNode = start;
+		var path:Array<SearchNode> = [];
+		for (i in 0...distance)
+		{
+			current = getNode(current.x + vel_x, current.y + vel_y);
+			if (current.unit != null || get_collision(current))
+				return path;
+			path.push(current);
+		}
+		return path;
 	}
 }

@@ -571,24 +571,57 @@
 						},
 						{
 							"__identifier": "Slime",
-							"__grid": [5,4],
+							"__grid": [6,4],
 							"__pivot": [0,0],
 							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
 							"width": 32,
 							"height": 32,
 							"defUid": 28,
-							"px": [160,128],
+							"px": [192,128],
 							"fieldInstances": []
 						},
 						{
 							"__identifier": "Player",
-							"__grid": [4,4],
+							"__grid": [3,4],
 							"__pivot": [0,0],
 							"__tile": { "tilesetUid": 23, "srcRect": [0,0,32,32] },
 							"width": 32,
 							"height": 32,
 							"defUid": 22,
-							"px": [128,128],
+							"px": [96,128],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [0,4],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [0,128],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [3,2],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [96,64],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [3,6],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [96,192],
 							"fieldInstances": []
 						}
 					]

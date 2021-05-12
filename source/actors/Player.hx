@@ -19,7 +19,7 @@ class Player extends Unit
 				name: "gun",
 				attack_type: WeaponAttackType.RANGED,
 				str: 1,
-				range: 3,
+				range: 1,
 				blindspot: 0,
 				knockback: 3
 			}

@@ -14,6 +14,7 @@ typedef GridStateTurn =
 
 typedef SearchNode =
 {
+	uid:Int,
 	x:Int,
 	y:Int,
 	value:Int,
@@ -27,14 +28,15 @@ typedef SearchNode =
 
 typedef UnitData =
 {
-	u_id:Int,
+	uid:Int,
 	x:Int,
 	y:Int,
 	team:Int,
 	speed:Int,
 	movement_left:Int,
 	health:Float,
-	weapons:Array<WeaponDef>
+	weapons:Array<WeaponDef>,
+	moved_already:Bool
 }
 
 class GridState
@@ -161,7 +163,7 @@ class GridState
 	public function find_unit_data_in_units(unit:UnitData):UnitData
 	{
 		for (u in grid.units)
-			if (u.u_id == unit.u_id)
+			if (u.uid == unit.uid)
 				return u;
 		return null;
 	}
@@ -169,7 +171,7 @@ class GridState
 	public function find_unit_actual_in_units(unit:UnitData):Unit
 	{
 		for (u in PlayState.self.units)
-			if (u.u_id == unit.u_id)
+			if (u.uid == unit.uid)
 				return u;
 		return null;
 	}
@@ -178,7 +180,7 @@ class GridState
 	{
 		for (unit_data in grid.units)
 			for (unit in PlayState.self.units)
-				if (unit_data.u_id == unit.u_id)
+				if (unit_data.uid == unit.uid)
 					unit.write_from_unit_data(unit_data);
 	}
 }
@@ -193,6 +195,9 @@ class GridArray
 	public var height_in_tiles:Int = 0;
 
 	public var collisions:Array<Int> = [1];
+
+	public var movement_options:Map<Int, Array<SearchNode>> = new Map<Int, Array<SearchNode>>();
+	public var attack_options:Map<Int, Array<SearchNode>> = new Map<Int, Array<SearchNode>>();
 
 	public function new(ArrayCopy:Array<Int>, units_array:Array<UnitData>)
 	{
@@ -244,10 +249,8 @@ class GridArray
 	public function getTileTeam(X:Int, Y:Int):Int
 	{
 		for (u in units)
-		{
 			if (u.x == X && u.y == Y)
 				return u.team;
-		}
 		return 0;
 	}
 
@@ -260,10 +263,8 @@ class GridArray
 	public function getTileUnit(X:Int, Y:Int):UnitData
 	{
 		for (u in units)
-		{
 			if (u.x == X && u.y == Y)
 				return u;
-		}
 		return null;
 	}
 
@@ -276,6 +277,7 @@ class GridArray
 	public function new_node(x:Int, y:Int, value:Int = 0, ?unit:UnitData, ?weapon:WeaponDef):SearchNode
 	{
 		return {
+			uid: x * width_in_tiles + y,
 			x: x,
 			y: y,
 			value: 0,
@@ -302,10 +304,14 @@ class GridArray
 		var visited:Array<SearchNode> = [];
 		var current:SearchNode;
 
+		movement_options.set(unit.uid, []);
+		attack_options.set(unit.uid, []);
+
 		for (n in nodes)
 		{
 			n.visited = false;
 			n.distance = 0;
+			n.path = [];
 		}
 
 		while (open_set.length > 0)
@@ -314,15 +320,27 @@ class GridArray
 			current.visited = true;
 			visited.push(current);
 			if (current.distance < speed)
-				for (neighbor in get_neighbors(current, unit.team))
+				for (neighbor in get_neighbors(current, unit))
 					if (!neighbor.visited)
 					{
 						neighbor.path = current.path.concat([current]);
 						neighbor.distance = neighbor.path.length;
 
-						trace(current.unit);
-						if (neighbor.unit != null)
-							trace('!!!!!!!!!!!!!!!UNIT IS HERE!!!!!!!!!!!!!!!');
+						trace(neighbor.path.length);
+						var cur_atk_opts:Array<SearchNode> = attack_options.get(unit.uid);
+						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor, unit.moved_already);
+
+						cur_atk_opts = combine_node_arrays(cur_atk_opts, new_atk_opts);
+
+						attack_options.set(unit.uid, cur_atk_opts);
+
+						trace(attack_options.get(unit.uid).length, "post");
+
+						/*
+							trace(current.unit);
+							if (neighbor.unit != null)
+								trace('!!!!!!!!!!!!!!!UNIT IS HERE!!!!!!!!!!!!!!!');
+						 */
 						set_add(open_set, neighbor);
 					}
 		}
@@ -338,6 +356,8 @@ class GridArray
 			if (VALID_VISITED)
 				response_array.push(v);
 		}
+
+		movement_options.set(unit.uid, response_array);
 
 		return response_array;
 	}
@@ -388,8 +408,11 @@ class GridArray
 							var attack_node:SearchNode = new_node(node.x + col, node.y + row, enemy_unit, weapon);
 							attack_node.attacking_from = node;
 							attack_node.path = node.path.copy();
-							trace('///\nsource node path (${node.x}, ${node.y}) length: ${node.path.length}'
-								+ '\nattack node path (${attack_node.x}, ${attack_node.y}) length: ${attack_node.path.length}\n///');
+
+							/*
+								trace('///\nsource node path (${node.x}, ${node.y}) length: ${node.path.length}'
+									+ '\nattack node path (${attack_node.x}, ${attack_node.y}) length: ${attack_node.path.length}\n///');
+							 */
 
 							attack_options.push(attack_node);
 						}
@@ -416,7 +439,7 @@ class GridArray
 	 * @param team team of the node to act as collision tiles if they don't match
 	 * @return Array<SearchNode> valid neighbors
 	 */
-	function get_neighbors(current:SearchNode, team:Int):Array<SearchNode>
+	function get_neighbors(current:SearchNode, unit:UnitData):Array<SearchNode>
 	{
 		var neighbors:Array<SearchNode> = [];
 
@@ -437,10 +460,14 @@ class GridArray
 			}
 
 			var node:SearchNode = getNode(neighbor_x, neighbor_y);
-			trace('${node.x} ${node.y} ${node.unit}');
+
+			if (attack_options.get(unit.uid) == null)
+				attack_options.get(unit.uid);
+
+			// trace('${node.x} ${node.y} ${node.unit}');
 			if (node != null)
 			{
-				var VALID_TEAM:Bool = node.unit == null || node.unit.team == team || node.unit.team == 0;
+				var VALID_TEAM:Bool = node.unit == null || node.unit.team == unit.team || node.unit.team == 0;
 
 				if (node.value >= 0 && collisions.indexOf(node.value) <= -1 && VALID_TEAM)
 					neighbors.push(node);
@@ -469,5 +496,32 @@ class GridArray
 			path.push(current);
 		}
 		return path;
+	}
+
+	function combine_node_arrays(array_1:Array<SearchNode>, array_2:Array<SearchNode>):Array<SearchNode>
+	{
+		for (node2 in array_2)
+		{
+			var NODE_ALREADY_IN_ARRAY:Bool = false;
+			var NODE_PATH_BETTER:Bool = false;
+			for (node1 in array_1)
+			{
+				if (node1.uid == node2.uid)
+				{
+					NODE_ALREADY_IN_ARRAY = true;
+					trace(node2.path.length, node1.path.length);
+					if (node2.path.length < node1.path.length)
+					{
+						trace("NODE PATH BETTER");
+						NODE_PATH_BETTER = true;
+						array_1.remove(node1);
+					}
+					break;
+				}
+			}
+			if (!NODE_ALREADY_IN_ARRAY)
+				array_1.push(node2);
+		}
+		return array_1;
 	}
 }

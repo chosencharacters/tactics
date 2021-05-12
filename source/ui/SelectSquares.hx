@@ -39,7 +39,7 @@ class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 		add(square);
 	}
 
-	public function select_squares(positions:Array<FlxPoint>, attack_highlights:Bool = false)
+	public function select_squares(positions:Array<SearchNode>, attack_highlights:Bool = false)
 	{
 		if (!attack_highlights)
 			clear_squares();

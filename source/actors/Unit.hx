@@ -1,8 +1,5 @@
 package actors;
 
-import GridState.GridStateTurn;
-import GridState.SearchNode;
-import GridState.UnitData;
 import actors.Weapon.WeaponDef;
 import flixel.text.FlxText;
 import flixel.tile.FlxBaseTilemap.FlxTilemapDiagonalPolicy;
@@ -17,23 +14,20 @@ class Unit extends Actor
 
 	var movement_left:Int = -1;
 
-	var movement_options:Array<FlxPoint> = new Array<FlxPoint>();
-	var movement_options_nodes:Array<SearchNode> = new Array<SearchNode>();
-
-	var attack_options:Array<SearchNode> = new Array<SearchNode>();
-	var immediate_attack_options:Array<SearchNode> = new Array<SearchNode>();
-
 	var movement_path:Array<FlxPoint> = new Array<FlxPoint>();
 
-	public var u_id:Int = 0;
+	public var uid:Int = 0;
 
 	var weapons:Array<WeaponDef> = [];
+
+	var movement_options:Array<SearchNode>;
+	var attack_options:Array<SearchNode>;
 
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
 
-		u_id = Utils.get_unused_id();
+		uid = Utils.get_unused_id();
 
 		PlayState.self.units.add(this);
 	}
@@ -120,43 +114,38 @@ class Unit extends Actor
 	public function select()
 	{
 		SELECTED = true;
-		movement_options = get_movement_options(PlayState.self.current_grid_state, tile_position);
+		get_movement_options(PlayState.self.current_grid_state, tile_position);
 	}
 
-	function get_movement_options(state:GridState, start:FlxPoint, auto_highlight:Bool = true):Array<FlxPoint>
+	function get_movement_options(state:GridState, start:FlxPoint, auto_highlight:Bool = true):Array<SearchNode>
 	{
 		var start_time:Float = Sys.time();
 
-		var valid_moves:Array<FlxPoint> = [];
-		var valid_attacks:Array<FlxPoint> = [];
+		state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
 
-		movement_options_nodes = state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
-		for (m in movement_options_nodes)
+		movement_options = state.grid.movement_options.get(uid);
+		attack_options = state.grid.attack_options.get(uid);
+
+		trace(attack_options.length);
+
+		for (m in movement_options)
 		{
 			trace(m.path.length);
 		}
 
-		attack_options = state.grid.calculate_all_attack_options(get_unit_data(), movement_options_nodes, speed != movement_left);
-
-		for (n in movement_options_nodes)
-			valid_moves.push(new FlxPoint(n.x, n.y));
-
-		for (n in attack_options)
-			valid_attacks.push(new FlxPoint(n.x, n.y));
-
 		if (auto_highlight)
 		{
-			PlayState.self.select_squares.select_squares(valid_moves);
-			PlayState.self.select_squares.select_squares(valid_attacks, true);
+			PlayState.self.select_squares.select_squares(movement_options);
+			PlayState.self.select_squares.select_squares(attack_options, true);
 		}
 
 		trace("TIME: " + (Sys.time() - start_time));
 
 		if (Main.DEBUG_PATH)
 		{
-			for (n in movement_options_nodes)
+			for (n in movement_options)
 				Utils.add_blank_tile_square(new FlxPoint(n.x * level.tile_size, n.y * level.tile_size));
-			for (n in movement_options_nodes)
+			for (n in movement_options)
 			{
 				var text:FlxText = new FlxText(n.x * level.tile_size, n.y * level.tile_size, n.distance + "");
 				text.color = FlxColor.BLACK;
@@ -164,7 +153,7 @@ class Unit extends Actor
 			}
 		}
 
-		return valid_moves;
+		return movement_options;
 	}
 
 	function teleport(X:Float, Y:Float)
@@ -178,7 +167,6 @@ class Unit extends Actor
 	{
 		var SELECT_INPUT:Bool = Ctrl.cursor_select;
 		var CURSOR_POSITION:FlxPoint = PlayState.self.cursor.tile_position;
-		var selected_pos:FlxPoint;
 
 		if (!SELECT_INPUT || !SELECTED)
 			return;
@@ -190,9 +178,9 @@ class Unit extends Actor
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
 				// teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
-				PlayState.self.current_grid_state.add_move_turn(this, movement_options_nodes[movement_options.indexOf(pos)]);
+				PlayState.self.current_grid_state.add_move_turn(this, pos);
 
-				movement_left -= movement_options_nodes[movement_options.indexOf(pos)].distance;
+				movement_left -= pos.distance;
 
 				SELECTED = false;
 				Ctrl.cursor_select = false;
@@ -233,9 +221,10 @@ class Unit extends Actor
 			team: team,
 			speed: speed,
 			movement_left: movement_left,
-			u_id: u_id,
+			uid: uid,
 			weapons: weapons,
-			health: health
+			health: health,
+			moved_already: speed != movement_left
 		};
 	}
 

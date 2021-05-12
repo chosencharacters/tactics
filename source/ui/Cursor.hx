@@ -34,7 +34,8 @@ class Cursor extends FlxSpriteExt
 
 		select();
 
-		position_text.text = x + ", " + y + "\n" + tile_position.x + ", " + tile_position.y;
+		position_text.text = '${x}, ${y}\n${tile_position.x}, ${tile_position.y}\n'
+			+ (tile_position.y * PlayState.self.current_grid_state.grid.width_in_tiles + tile_position.x);
 		super.update(elapsed);
 	}
 

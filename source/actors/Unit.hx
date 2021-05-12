@@ -49,7 +49,7 @@ class Unit extends Actor
 	{
 		if (!REALIZING && turn.path.length > 0)
 		{
-			for (node in turn.path)
+			for (node in state.grid.get_path_as_nodes(turn.path))
 				movement_path.push(FlxPoint.weak(node.x * level.tile_size, node.y * level.tile_size));
 
 			move_tile_position = movement_path.shift();
@@ -126,13 +126,6 @@ class Unit extends Actor
 		movement_options = state.grid.movement_options.get(uid);
 		attack_options = state.grid.attack_options.get(uid);
 
-		trace(attack_options.length);
-
-		for (m in movement_options)
-		{
-			trace(m.path.length);
-		}
-
 		if (auto_highlight)
 		{
 			PlayState.self.select_squares.select_squares(movement_options);
@@ -177,7 +170,6 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				// teleport(CURSOR_POSITION.x, CURSOR_POSITION.y);
 				PlayState.self.current_grid_state.add_move_turn(this, pos);
 
 				movement_left -= pos.distance;
@@ -195,13 +187,10 @@ class Unit extends Actor
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
 				var enemy_unit:Unit = PlayState.self.current_grid_state.find_unit_actual_in_units(pos.unit);
+				var path_nodes:Array<SearchNode> = PlayState.self.current_grid_state.grid.get_path_as_nodes(pos.path);
 
-				trace(pos.path);
-				trace(pos.path.length, pos.path[pos.path.length - 1]);
-				trace('attack node path (${pos.x}, ${pos.y}) length: ${pos.path.length}');
-
-				teleport(pos.path[pos.path.length - 1].x, pos.path[pos.path.length - 1].y);
-				PlayState.self.current_grid_state.add_attack_turn(this, enemy_unit, pos.weapon, false);
+				PlayState.self.current_grid_state.add_move_turn(this, path_nodes[path_nodes.length - 1], false);
+				PlayState.self.current_grid_state.add_attack_turn(this, enemy_unit, pos.weapon, true);
 
 				movement_left = 0;
 

@@ -9,7 +9,7 @@ typedef GridStateTurn =
 	weapon:WeaponDef,
 	move_x:Int,
 	move_y:Int,
-	path:Array<SearchNode>
+	path:Array<Int>
 }
 
 typedef SearchNode =
@@ -18,7 +18,7 @@ typedef SearchNode =
 	x:Int,
 	y:Int,
 	value:Int,
-	path:Array<SearchNode>,
+	path:Array<Int>,
 	visited:Bool,
 	distance:Int,
 	unit:UnitData,
@@ -91,7 +91,7 @@ class GridState
 		var turn:GridStateTurn = empty_turn();
 		turn.source_unit = unit;
 		turn.turn_type = "move";
-		turn.path = node.path.concat([node]);
+		turn.path = node.path.concat([node.uid]);
 
 		turns.push(turn);
 
@@ -277,7 +277,7 @@ class GridArray
 	public function new_node(x:Int, y:Int, value:Int = 0, ?unit:UnitData, ?weapon:WeaponDef):SearchNode
 	{
 		return {
-			uid: x * width_in_tiles + y,
+			uid: y * width_in_tiles + x,
 			x: x,
 			y: y,
 			value: 0,
@@ -323,10 +323,9 @@ class GridArray
 				for (neighbor in get_neighbors(current, unit))
 					if (!neighbor.visited)
 					{
-						neighbor.path = current.path.concat([current]);
+						neighbor.path = current.path.concat([current.uid]);
 						neighbor.distance = neighbor.path.length;
 
-						trace(neighbor.path.length);
 						var cur_atk_opts:Array<SearchNode> = attack_options.get(unit.uid);
 						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor, unit.moved_already);
 
@@ -334,13 +333,6 @@ class GridArray
 
 						attack_options.set(unit.uid, cur_atk_opts);
 
-						trace(attack_options.get(unit.uid).length, "post");
-
-						/*
-							trace(current.unit);
-							if (neighbor.unit != null)
-								trace('!!!!!!!!!!!!!!!UNIT IS HERE!!!!!!!!!!!!!!!');
-						 */
 						set_add(open_set, neighbor);
 					}
 		}
@@ -399,20 +391,15 @@ class GridArray
 		for (weapon in unit.weapons)
 			// can't use artillery weapons if you've already moved
 			if (!(moved_already && weapon.attack_type == WeaponAttackType.ARTILLERY))
-				for (col in -weapon.range...weapon.range)
-					for (row in -weapon.range...weapon.range)
+				for (col in -weapon.range...weapon.range + 1)
+					for (row in -weapon.range...weapon.range + 1)
 					{
 						var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
 						if (enemy_unit != null && enemy_unit.team != unit.team)
 						{
 							var attack_node:SearchNode = new_node(node.x + col, node.y + row, enemy_unit, weapon);
 							attack_node.attacking_from = node;
-							attack_node.path = node.path.copy();
-
-							/*
-								trace('///\nsource node path (${node.x}, ${node.y}) length: ${node.path.length}'
-									+ '\nattack node path (${attack_node.x}, ${attack_node.y}) length: ${attack_node.path.length}\n///');
-							 */
+							attack_node.path = node.path.copy().concat([node.uid]);
 
 							attack_options.push(attack_node);
 						}
@@ -447,6 +434,7 @@ class GridArray
 		{
 			var neighbor_x:Int = current.x;
 			var neighbor_y:Int = current.y;
+
 			switch (i)
 			{
 				case 0:
@@ -464,11 +452,9 @@ class GridArray
 			if (attack_options.get(unit.uid) == null)
 				attack_options.get(unit.uid);
 
-			// trace('${node.x} ${node.y} ${node.unit}');
 			if (node != null)
 			{
 				var VALID_TEAM:Bool = node.unit == null || node.unit.team == unit.team || node.unit.team == 0;
-
 				if (node.value >= 0 && collisions.indexOf(node.value) <= -1 && VALID_TEAM)
 					neighbors.push(node);
 			}
@@ -500,28 +486,37 @@ class GridArray
 
 	function combine_node_arrays(array_1:Array<SearchNode>, array_2:Array<SearchNode>):Array<SearchNode>
 	{
+		// blank array handling
+		if (array_1.length <= 0)
+		{
+			array_1 = array_2.copy();
+			return array_1;
+		}
+		// only add node if it's not already in the array
 		for (node2 in array_2)
 		{
 			var NODE_ALREADY_IN_ARRAY:Bool = false;
 			var NODE_PATH_BETTER:Bool = false;
 			for (node1 in array_1)
-			{
 				if (node1.uid == node2.uid)
 				{
-					NODE_ALREADY_IN_ARRAY = true;
-					trace(node2.path.length, node1.path.length);
-					if (node2.path.length < node1.path.length)
-					{
-						trace("NODE PATH BETTER");
-						NODE_PATH_BETTER = true;
+					NODE_PATH_BETTER = node2.path.length < node1.path.length;
+					NODE_ALREADY_IN_ARRAY = NODE_PATH_BETTER;
+					if (NODE_PATH_BETTER)
 						array_1.remove(node1);
-					}
 					break;
 				}
-			}
 			if (!NODE_ALREADY_IN_ARRAY)
 				array_1.push(node2);
 		}
 		return array_1;
+	}
+
+	public function get_path_as_nodes(path:Array<Int>):Array<SearchNode>
+	{
+		var path_nodes:Array<SearchNode> = [];
+		for (node_id in path)
+			path_nodes.push(nodes[node_id]);
+		return path_nodes;
 	}
 }

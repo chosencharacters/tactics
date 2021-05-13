@@ -29,7 +29,7 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 		name_text = Utils.formatText(name_text, "right", FlxColor.WHITE, false, "assets/fonts/6px-Normal.ttf", 8);
 		add(name_text);
 
-		setPosition(FlxG.width - base.width, FlxG.height - base.height);
+		setPosition(FlxG.width - width, FlxG.height - height);
 
 		scrollFactor.set(0, 0);
 	}

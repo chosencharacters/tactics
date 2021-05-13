@@ -41,7 +41,7 @@ class PlayState extends BaseState
 
 		ui.add(unit_viewer = new UnitViewer());
 
-		current_grid_state = new GridState();
+		regenerate_grid();
 	}
 
 	public function regenerate_grid()
@@ -62,9 +62,32 @@ class PlayState extends BaseState
 
 	override public function update(elapsed:Float)
 	{
+		sort_units();
 		current_grid_state.update();
 		if (Ctrl.any(Ctrl.reset))
 			FlxG.switchState(new PlayState());
 		super.update(elapsed);
 	}
+
+	public function sort_units()
+	{
+		haxe.ds.ArraySort.sort(units.members, function(a:Unit, b:Unit):Int
+		{
+			var a_index:Float = a.tile_position.y * current_grid_state.grid.width_in_tiles + a.tile_position.x;
+			var b_index:Float = b.tile_position.y * current_grid_state.grid.width_in_tiles + b.tile_position.x;
+			if (a_index == b_index)
+				return 0;
+			return a_index > b_index ? 1 : -1;
+		});
+	}
+	/*
+		function quicksort_units(A:Array<Unit>, lo:Int, hi:Int)
+		{
+			if (lo < hi)
+			{
+				var p:Array<Unit> = partition();
+				quicksort_units
+			}
+		}
+	 */
 }

@@ -119,7 +119,9 @@ class Unit extends Actor
 
 	function get_movement_options(state:GridState, start:FlxPoint, auto_highlight:Bool = true):Array<SearchNode>
 	{
+		#if !html5
 		var start_time:Float = Sys.time();
+		#end
 
 		state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
 
@@ -132,7 +134,9 @@ class Unit extends Actor
 			PlayState.self.select_squares.select_squares(attack_options, true);
 		}
 
+		#if !html5
 		trace("TIME: " + (Sys.time() - start_time));
+		#end
 
 		if (Main.DEBUG_PATH)
 		{

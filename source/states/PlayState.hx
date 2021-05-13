@@ -1,10 +1,12 @@
 package states;
 
 import flixel.FlxState;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
 import levels.Level;
 import ui.Cursor;
 import ui.SelectSquares;
+import ui.UnitViewer;
 
 class PlayState extends BaseState
 {
@@ -14,10 +16,13 @@ class PlayState extends BaseState
 
 	public var units:FlxTypedGroup<Unit>;
 
+	public var ui:FlxTypedGroup<FlxSprite>;
 	public var cursor:Cursor;
 	public var select_squares:SelectSquares;
 
 	public var current_grid_state:GridState;
+
+	public var unit_viewer:UnitViewer;
 
 	override public function create()
 	{
@@ -32,6 +37,9 @@ class PlayState extends BaseState
 		add(select_squares = new SelectSquares());
 		add(units);
 		add(cursor = new Cursor());
+		add(ui = new FlxTypedGroup<FlxSprite>());
+
+		ui.add(unit_viewer = new UnitViewer());
 
 		current_grid_state = new GridState();
 	}

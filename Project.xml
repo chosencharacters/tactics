@@ -4,7 +4,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Grill" file="Grill" main="Main" version="0.0.1" company="Octosoft" />
+	<app title="Tactics" file="Tactics" main="Main" version="0.6.9" company="Secret" />
 
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->

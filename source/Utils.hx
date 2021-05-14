@@ -201,10 +201,11 @@ class Utils
 		else
 			text.setFormat(font, font_size, color, alignment);
 
-		#if !flash
-		text.x -= 1;
-		text.y -= 1;
+		#if flash
+		text.x += 1;
+		text.y += 1;
 		#end
+
 		return text;
 	}
 
@@ -269,5 +270,30 @@ class Utils
 	{
 		current_id_total++;
 		return current_id_total;
+	}
+
+	/**
+	 * Good for UI aligning, moves and traces the position, just toss this in update()
+	 * @param object object to move around
+	 */
+	public static function move_and_trace(?name:String, object:FlxObject, ?relative_object:FlxObject)
+	{
+		var old_position:FlxPoint = object.getPosition(FlxPoint.weak());
+
+		if (FlxG.keys.anyJustPressed(["LEFT"]))
+			object.x--;
+		if (FlxG.keys.anyJustPressed(["RIGHT"]))
+			object.x++;
+		if (FlxG.keys.anyJustPressed(["UP"]))
+			object.y--;
+		if (FlxG.keys.anyJustPressed(["DOWN"]))
+			object.y++;
+
+		var pos:FlxPoint = object.getPosition(FlxPoint.weak());
+		if (relative_object != null)
+			pos.subtract(relative_object.x, relative_object.y);
+
+		if (old_position.x != object.x || old_position.y != object.y)
+			trace('New \'{$name}\' position: (${pos.x} , ${pos.y})');
 	}
 }

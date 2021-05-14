@@ -46,6 +46,9 @@ class Cursor extends FlxSpriteExt
 
 		if (Ctrl.cursor_select)
 		{
+			PlayState.self.unit_viewer.clear_data();
+			PlayState.self.selected_unit = null;
+
 			PlayState.self.select_squares.select_squares([]);
 			for (unit in PlayState.self.units)
 				unit.SELECTED = false;
@@ -55,9 +58,15 @@ class Cursor extends FlxSpriteExt
 				if (TEAM_OK && unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
 				{
 					unit.select();
+					PlayState.self.selected_unit = unit;
 					return;
 				}
 			}
 		}
+	}
+
+	public function unselect()
+	{
+		PlayState.self.selected_unit = null;
 	}
 }

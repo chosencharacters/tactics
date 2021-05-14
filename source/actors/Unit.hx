@@ -11,8 +11,10 @@ class Unit extends Actor
 	public var REALIZING:Bool = false;
 
 	var speed:Int = 0;
-
+	var max_health:Int = 50;
 	var movement_left:Int = -1;
+
+	var name:String = "";
 
 	var movement_path:Array<FlxPoint> = new Array<FlxPoint>();
 
@@ -92,6 +94,8 @@ class Unit extends Actor
 					REALIZING = false;
 				else
 					move_tile_position = movement_path.shift();
+				if (!REALIZING)
+					PlayState.self.cursor.unselect();
 			}
 		}
 	}
@@ -114,6 +118,7 @@ class Unit extends Actor
 	public function select()
 	{
 		SELECTED = true;
+		PlayState.self.selected_unit = this;
 		get_movement_options(PlayState.self.current_grid_state, tile_position);
 	}
 
@@ -174,9 +179,9 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				PlayState.self.current_grid_state.add_move_turn(this, pos);
-
 				movement_left -= pos.distance;
+
+				PlayState.self.current_grid_state.add_move_turn(this, pos);
 
 				SELECTED = false;
 				Ctrl.cursor_select = false;
@@ -209,9 +214,12 @@ class Unit extends Actor
 	public function get_unit_data():UnitData
 	{
 		return {
+			name: name,
+			types: [],
 			x: Math.floor(tile_position.x),
 			y: Math.floor(tile_position.y),
 			team: team,
+			max_health: max_health,
 			speed: speed,
 			movement_left: movement_left,
 			uid: uid,

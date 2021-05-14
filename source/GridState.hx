@@ -29,9 +29,12 @@ typedef SearchNode =
 typedef UnitData =
 {
 	uid:Int,
+	name:String,
+	types:Array<String>,
 	x:Int,
 	y:Int,
 	team:Int,
+	max_health:Int,
 	speed:Int,
 	movement_left:Int,
 	health:Float,
@@ -56,13 +59,18 @@ class GridState
 
 	public function new()
 	{
-		grid = new GridArray(PlayState.self.level.col.getData(true), unit_data_from_group(PlayState.self.units));
+		regen_grid();
 	}
 
 	public function update()
 	{
 		if (realizing_state)
 			realize_state();
+	}
+
+	function regen_grid()
+	{
+		grid = new GridArray(PlayState.self.level.col.getData(true), unit_data_from_group(PlayState.self.units));
 	}
 
 	function realize_state()
@@ -75,11 +83,17 @@ class GridState
 				case "move":
 					turn.source_unit.realize_move(this, turn);
 					if (!turn.source_unit.REALIZING)
+					{
+						regen_grid();
 						turns.shift();
+					}
 				case "attack":
 					turn.source_unit.realize_attack(this, turn.target_unit, turn.weapon);
 					if (!turn.source_unit.REALIZING)
+					{
+						regen_grid();
 						turns.shift();
+					}
 			}
 		}
 		if (turns.length <= 0)

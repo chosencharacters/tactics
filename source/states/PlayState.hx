@@ -19,6 +19,7 @@ class PlayState extends BaseState
 	public var ui:FlxTypedGroup<FlxSprite>;
 	public var cursor:Cursor;
 	public var select_squares:SelectSquares;
+	public var selected_unit:Unit;
 
 	public var current_grid_state:GridState;
 

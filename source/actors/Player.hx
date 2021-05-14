@@ -10,6 +10,8 @@ class Player extends Unit
 
 		team = 1;
 		speed = 3;
+		health = 25;
+		name = "Rodney";
 
 		loadAllFromAnimationSet("boy");
 

@@ -17,7 +17,10 @@ jobs:
         flixel-versions: release
         target: html5
     - name: Build
-      run: haxelib run lime build html5 -final
+      run: |
+      haxelib install ldtk-haxe-api
+      haxelib install deepnightLibs 
+      haxelib run lime build html5 -final
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

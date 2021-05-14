@@ -18,9 +18,9 @@ jobs:
         target: html5
     - name: Build
       run: |
-      haxelib install ldtk-haxe-api
-      haxelib install deepnightLibs 
-      haxelib run lime build html5 -final
+        haxelib install ldtk-haxe-api
+        haxelib install deepnightLibs 
+        haxelib run lime build html5 -final
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

@@ -46,7 +46,8 @@ class GridState
 {
 	public var turns:Array<GridStateTurn> = [];
 
-	var turn_index:Int = 0;
+	public var turn_index:Int = 0;
+
 	var score:Int = 0;
 	var ready_for_next_turn:Bool = false;
 	var realizing_state:Bool = false;
@@ -56,6 +57,9 @@ class GridState
 	public var max_team:Int = 1;
 
 	var total_turns:Int = 0;
+
+	/**is the game over?**/
+	public var game_over:Bool = false;
 
 	public function new()
 	{

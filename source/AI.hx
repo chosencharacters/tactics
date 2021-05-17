@@ -21,7 +21,7 @@ class AI extends PlayerHandler
 			return;
 		activated = true;
 
-		var current_state:GridState = PlayState.self.current_grid_state;
+		var current_state:GridState = PlayState.self.current_state;
 
 		if (current_state.realizing_state)
 			return;
@@ -43,7 +43,7 @@ class AI extends PlayerHandler
 
 				var best_state:GridState = get_best_state(states);
 				best_state.realize_state(true);
-				PlayState.self.current_grid_state = best_state;
+				PlayState.self.current_state = best_state;
 				trace("REALIZE STATE START" + current_state.realizing_state);
 
 				return;

@@ -120,7 +120,7 @@ class Unit extends Actor
 	{
 		SELECTED = true;
 		PlayState.self.selected_unit = this;
-		get_movement_options(PlayState.self.current_grid_state, tile_position);
+		get_movement_options(PlayState.self.current_state, tile_position);
 	}
 
 	function get_movement_options(state:GridState, start:FlxPoint, auto_highlight:Bool = true):Array<SearchNode>
@@ -168,7 +168,7 @@ class Unit extends Actor
 
 	public function select_position()
 	{
-		var state:GridState = PlayState.self.current_grid_state;
+		var state:GridState = PlayState.self.current_state;
 		var SELECT_INPUT:Bool = Ctrl.cursor_select;
 		var CURSOR_POSITION:FlxPoint = PlayState.self.cursor.tile_position;
 
@@ -181,7 +181,7 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				PlayState.self.current_grid_state.add_move_turn(state.grid.units.get(uid), pos);
+				PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), pos);
 
 				SELECTED = false;
 				Ctrl.cursor_select = false;
@@ -196,10 +196,10 @@ class Unit extends Actor
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
 				var enemy_unit:UnitData = pos.unit;
-				var path_nodes:Array<SearchNode> = PlayState.self.current_grid_state.grid.get_path_as_nodes(pos.path);
+				var path_nodes:Array<SearchNode> = PlayState.self.current_state.grid.get_path_as_nodes(pos.path);
 
-				PlayState.self.current_grid_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
-				PlayState.self.current_grid_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
+				PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
+				PlayState.self.current_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
 
 				movement_left = 0;
 

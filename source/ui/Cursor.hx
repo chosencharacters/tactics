@@ -35,7 +35,7 @@ class Cursor extends FlxSpriteExt
 		select();
 
 		position_text.text = '${x}, ${y}\n${tile_position.x}, ${tile_position.y}\n'
-			+ (tile_position.y * PlayState.self.current_grid_state.grid.width_in_tiles + tile_position.x);
+			+ (tile_position.y * PlayState.self.current_state.grid.width_in_tiles + tile_position.x);
 		super.update(elapsed);
 	}
 
@@ -54,7 +54,7 @@ class Cursor extends FlxSpriteExt
 				unit.SELECTED = false;
 			for (unit in PlayState.self.units)
 			{
-				var TEAM_OK:Bool = unit.team == PlayState.self.current_grid_state.active_team;
+				var TEAM_OK:Bool = unit.team == PlayState.self.current_state.active_team;
 				if (TEAM_OK && unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
 				{
 					unit.select();

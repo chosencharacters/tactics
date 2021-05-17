@@ -21,7 +21,7 @@ class PlayState extends BaseState
 	public var select_squares:SelectSquares;
 	public var selected_unit:Unit;
 
-	public var current_grid_state:GridState;
+	public var current_state:GridState;
 
 	public var unit_viewer:UnitViewer;
 
@@ -51,7 +51,7 @@ class PlayState extends BaseState
 
 	public function regenerate_state()
 	{
-		current_grid_state = new GridState();
+		current_state = new GridState();
 	}
 
 	function create_level()
@@ -74,7 +74,7 @@ class PlayState extends BaseState
 			ai.dumb_ai();
 		}
 		sort_units();
-		current_grid_state.update();
+		current_state.update();
 		if (Ctrl.any(Ctrl.reset))
 			FlxG.switchState(new PlayState());
 		super.update(elapsed);
@@ -84,8 +84,8 @@ class PlayState extends BaseState
 	{
 		haxe.ds.ArraySort.sort(units.members, function(a:Unit, b:Unit):Int
 		{
-			var a_index:Float = a.tile_position.y * current_grid_state.grid.width_in_tiles + a.tile_position.x;
-			var b_index:Float = b.tile_position.y * current_grid_state.grid.width_in_tiles + b.tile_position.x;
+			var a_index:Float = a.tile_position.y * current_state.grid.width_in_tiles + a.tile_position.x;
+			var b_index:Float = b.tile_position.y * current_state.grid.width_in_tiles + b.tile_position.x;
 			if (a_index == b_index)
 				return 0;
 			return a_index > b_index ? 1 : -1;

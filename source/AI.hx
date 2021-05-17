@@ -1,6 +1,6 @@
 import GridState.GridArray;
 
-class AI
+class AI extends PlayerHandler
 {
 	var team:Int = 0;
 	var activated:Bool = false;
@@ -8,6 +8,11 @@ class AI
 	public function new(Team:Int)
 	{
 		team = Team;
+	}
+
+	override function update()
+	{
+		dumb_ai();
 	}
 
 	public function dumb_ai()
@@ -40,7 +45,7 @@ class AI
 				best_state.realize_state(true);
 				PlayState.self.current_grid_state = best_state;
 				trace("REALIZE STATE START" + current_state.realizing_state);
-				
+
 				return;
 			}
 		}

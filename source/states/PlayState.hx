@@ -27,6 +27,8 @@ class PlayState extends BaseState
 
 	var tick:Int = 30;
 
+	var turn_manager:TurnManager = new TurnManager();
+
 	override public function create()
 	{
 		super.create();

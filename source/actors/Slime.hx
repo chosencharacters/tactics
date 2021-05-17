@@ -9,6 +9,9 @@ class Slime extends Unit
 		team = 2;
 		speed = 3;
 		movement_left = speed;
+
+		trace("NEW SLIME");
+
 		name = "slime";
 
 		trace(tile_position.x, tile_position.y);

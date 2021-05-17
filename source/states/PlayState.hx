@@ -66,7 +66,7 @@ class PlayState extends BaseState
 	override public function update(elapsed:Float)
 	{
 		tick--;
-		if (tick == 0)
+		if (tick <= 0)
 		{
 			var ai:AI = new AI(2);
 			ai.dumb_ai();

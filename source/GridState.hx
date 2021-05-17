@@ -50,7 +50,8 @@ class GridState
 	public var score:Float = 0;
 
 	var ready_for_next_turn:Bool = false;
-	var realizing_state:Bool = false;
+
+	public var realizing_state:Bool = false;
 
 	public var grid:GridArray;
 	public var active_team:Int = 1;
@@ -86,11 +87,13 @@ class GridState
 		{
 			realizing_state = true;
 			turn_index = 0;
+			return;
 		}
 		if (turns.length > turn_index)
 		{
 			var turn:GridStateTurn = turns[turn_index];
 			var source_unit:Unit = unit_from_unit_data(turn.source_unit);
+			trace(turns.length, turn_index);
 
 			switch (turn.turn_type)
 			{
@@ -98,7 +101,8 @@ class GridState
 					source_unit.realize_move(this, turn);
 					if (!source_unit.REALIZING)
 					{
-						trace("!!!");
+						trace("MOVE TURN END");
+						source_unit.movement_left = turn.source_unit.movement_left - turn.path.length;
 						regen_grid();
 						turn_index++;
 					}
@@ -106,7 +110,7 @@ class GridState
 					source_unit.realize_attack(this, turn.target_unit, turn.weapon);
 					if (!source_unit.REALIZING)
 					{
-						trace("!!!");
+						trace("ATTACK TURN END");
 						regen_grid();
 						turn_index++;
 					}
@@ -114,6 +118,7 @@ class GridState
 		}
 		if (turn_index == turns.length || turns.length == 0)
 		{
+			trace("TURN SET END");
 			turn_index = 0;
 			realizing_state = false;
 			PlayState.self.regenerate_state();

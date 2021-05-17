@@ -12,7 +12,8 @@ class Unit extends Actor
 
 	var speed:Int = 0;
 	var max_health:Int = 50;
-	var movement_left:Int = -1;
+
+	public var movement_left:Int = -1;
 
 	var name:String = "";
 
@@ -30,20 +31,20 @@ class Unit extends Actor
 		super(X, Y);
 
 		uid = Utils.get_unused_id();
+		new_turn();
 
 		PlayState.self.units.add(this);
 	}
 
 	override function update(elapsed:Float)
 	{
-		if (movement_left <= -1)
-			new_turn();
 		select_position();
 		super.update(elapsed);
 	}
 
 	function new_turn()
 	{
+		trace("NEW TURN");
 		movement_left = speed;
 	}
 
@@ -72,9 +73,6 @@ class Unit extends Actor
 
 			var tile_y:Int = Math.floor(move_tile_position.y + level.tile_size - height);
 			var my_y:Int = Math.floor(y);
-
-			trace(tile_position.x, tile_position.y);
-			trace(move_tile_position.x, move_tile_position.y);
 
 			var NOT_ON_X:Bool = tile_x < my_x - 4 || tile_x > my_x + 4;
 			var NOT_ON_Y:Bool = tile_y < my_y - 4 || tile_y > my_y + 4;
@@ -183,8 +181,6 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				movement_left -= pos.distance;
-
 				PlayState.self.current_grid_state.add_move_turn(state.grid.units.get(uid), pos);
 
 				SELECTED = false;

@@ -17,22 +17,33 @@ class AI
 		activated = true;
 
 		var current_state:GridState = PlayState.self.current_grid_state;
-		var states:Array<GridState> = [];
 
+		if (current_state.realizing_state)
+			return;
 		for (unit in current_state.grid.units)
-			if (unit.team == team)
+		{
+			// trace(unit.movement_left);
+			if (unit.team == team && unit.movement_left > 0)
+			{
+				trace(unit.movement_left);
+
+				current_state.find_unit_actual_in_units(unit).color = FlxColor.GRAY;
+
+				var states:Array<GridState> = [];
+
 				states = states.concat(simulate_all_turns(current_state, unit));
 
-		for (state in states)
-			state = evaluate_state(state);
+				for (state in states)
+					state = evaluate_state(state);
 
-		trace(states.length);
-		var best_state:GridState = get_best_state(states);
-		best_state.realize_state(true);
-		PlayState.self.current_grid_state = best_state;
-		// best_state.write_state_to_game();
-
-		trace(best_state.turns[0]);
+				var best_state:GridState = get_best_state(states);
+				best_state.realize_state(true);
+				PlayState.self.current_grid_state = best_state;
+				trace("REALIZE STATE START" + current_state.realizing_state);
+				
+				return;
+			}
+		}
 	}
 
 	function simulate_all_turns(state:GridState, unit:UnitData):Array<GridState>
@@ -63,7 +74,7 @@ class AI
 				var node1:SearchNode = state.grid.getNode(unit1.x, unit1.y);
 				var node2:SearchNode = state.grid.getNode(unit2.x, unit2.y);
 				if (unit1.team != unit2.team)
-					state.score -= Math.ceil(state.grid.manhatten_heuristic(node1, node2)) + node2.path.length;
+					state.score -= Math.ceil(state.grid.manhatten_heuristic(node1, node2));
 			}
 		}
 		return state;

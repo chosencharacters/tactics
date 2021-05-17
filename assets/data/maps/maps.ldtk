@@ -590,6 +590,50 @@
 							"defUid": 28,
 							"px": [192,128],
 							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [9,6],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [288,192],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [5,7],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [160,224],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [1,8],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [32,256],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Slime",
+							"__grid": [9,2],
+							"__pivot": [0,0],
+							"__tile": { "tilesetUid": 23, "srcRect": [64,0,32,32] },
+							"width": 32,
+							"height": 32,
+							"defUid": 28,
+							"px": [288,64],
+							"fieldInstances": []
 						}
 					]
 				},

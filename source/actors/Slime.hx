@@ -6,8 +6,12 @@ class Slime extends Unit
 	{
 		super(X, Y);
 
-		team = -1;
+		team = 2;
 		speed = 3;
+		movement_left = speed;
+		name = "slime";
+
+		trace(tile_position.x, tile_position.y);
 
 		loadAllFromAnimationSet("slime");
 	}

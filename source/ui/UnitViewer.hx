@@ -54,7 +54,7 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 	{
 		Utils.move_and_trace("", hp_bar, this);
 		if (PlayState.self.selected_unit != null)
-			set_data(PlayState.self.selected_unit.get_unit_data());
+			set_data(PlayState.self.current_grid_state.grid.units.get(PlayState.self.selected_unit.uid));
 		super.update(elapsed);
 	}
 

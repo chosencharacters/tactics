@@ -73,6 +73,9 @@ class Unit extends Actor
 			var tile_y:Int = Math.floor(move_tile_position.y + level.tile_size - height);
 			var my_y:Int = Math.floor(y);
 
+			trace(tile_position.x, tile_position.y);
+			trace(move_tile_position.x, move_tile_position.y);
+
 			var NOT_ON_X:Bool = tile_x < my_x - 4 || tile_x > my_x + 4;
 			var NOT_ON_Y:Bool = tile_y < my_y - 4 || tile_y > my_y + 4;
 			if (NOT_ON_X)
@@ -82,14 +85,14 @@ class Unit extends Actor
 			}
 			else if (NOT_ON_Y)
 			{
+				trace("PRE", x);
 				x = tile_x - width / 2;
 				velocity.y = tile_y < my_y ? -vel : vel;
+				trace("POST:", x);
 			}
 			else
 			{
 				tile_position.set(move_tile_position.x / level.tile_size, move_tile_position.y / level.tile_size);
-				if (movement_path.length <= 0)
-					state.turns.shift();
 				if (movement_path.length <= 0)
 					REALIZING = false;
 				else
@@ -100,9 +103,9 @@ class Unit extends Actor
 		}
 	}
 
-	public function realize_attack(state:GridState, target_unit:Unit, weapon:WeaponDef)
+	public function realize_attack(state:GridState, target_unit:UnitData, weapon:WeaponDef)
 	{
-		state.attack(get_unit_data(), target_unit.get_unit_data(), weapon);
+		state.attack(state.grid.units.get(uid), target_unit, weapon);
 	}
 
 	function snap_to_grid()
@@ -128,7 +131,7 @@ class Unit extends Actor
 		var start_time:Float = Sys.time();
 		#end
 
-		state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
+		state.grid.bfs_movement_options(start, state.grid.units.get(uid));
 
 		movement_options = state.grid.movement_options.get(uid);
 		attack_options = state.grid.attack_options.get(uid);
@@ -162,11 +165,12 @@ class Unit extends Actor
 	{
 		tile_position.x = Math.floor(X);
 		tile_position.y = Math.floor(Y);
-		PlayState.self.regenerate_grid();
+		PlayState.self.regenerate_state();
 	}
 
 	public function select_position()
 	{
+		var state:GridState = PlayState.self.current_grid_state;
 		var SELECT_INPUT:Bool = Ctrl.cursor_select;
 		var CURSOR_POSITION:FlxPoint = PlayState.self.cursor.tile_position;
 
@@ -181,7 +185,7 @@ class Unit extends Actor
 			{
 				movement_left -= pos.distance;
 
-				PlayState.self.current_grid_state.add_move_turn(this, pos);
+				PlayState.self.current_grid_state.add_move_turn(state.grid.units.get(uid), pos);
 
 				SELECTED = false;
 				Ctrl.cursor_select = false;
@@ -195,11 +199,11 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				var enemy_unit:Unit = PlayState.self.current_grid_state.find_unit_actual_in_units(pos.unit);
+				var enemy_unit:UnitData = pos.unit;
 				var path_nodes:Array<SearchNode> = PlayState.self.current_grid_state.grid.get_path_as_nodes(pos.path);
 
-				PlayState.self.current_grid_state.add_move_turn(this, path_nodes[path_nodes.length - 1], false);
-				PlayState.self.current_grid_state.add_attack_turn(this, enemy_unit, pos.weapon, true);
+				PlayState.self.current_grid_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
+				PlayState.self.current_grid_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
 
 				movement_left = 0;
 
@@ -233,6 +237,8 @@ class Unit extends Actor
 	{
 		tile_position.x = data.x;
 		tile_position.y = data.y;
+		health = data.health;
+		max_health = data.max_health;
 		snap_to_grid();
 	}
 }

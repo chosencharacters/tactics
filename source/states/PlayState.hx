@@ -25,6 +25,8 @@ class PlayState extends BaseState
 
 	public var unit_viewer:UnitViewer;
 
+	var tick:Int = 30;
+
 	override public function create()
 	{
 		super.create();
@@ -42,10 +44,10 @@ class PlayState extends BaseState
 
 		ui.add(unit_viewer = new UnitViewer());
 
-		regenerate_grid();
+		regenerate_state();
 	}
 
-	public function regenerate_grid()
+	public function regenerate_state()
 	{
 		current_grid_state = new GridState();
 	}
@@ -63,6 +65,12 @@ class PlayState extends BaseState
 
 	override public function update(elapsed:Float)
 	{
+		tick--;
+		if (tick == 0)
+		{
+			var ai:AI = new AI(2);
+			ai.dumb_ai();
+		}
 		sort_units();
 		current_grid_state.update();
 		if (Ctrl.any(Ctrl.reset))

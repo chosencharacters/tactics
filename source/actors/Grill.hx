@@ -11,6 +11,7 @@ class Grill extends Unit
 		name = "Alex";
 
 		loadAllFromAnimationSet("girl");
+		init();
 	}
 
 	override function update(elapsed:Float)

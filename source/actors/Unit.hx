@@ -237,4 +237,10 @@ class Unit extends Actor
 		max_health = data.max_health;
 		snap_to_grid();
 	}
+
+	function init()
+	{
+		movement_left = speed;
+		health = max_health;
+	}
 }

@@ -8,8 +8,10 @@ class Grill extends Unit
 
 		team = 1;
 		speed = 3;
+		name = "Alex";
 
 		loadAllFromAnimationSet("girl");
+		init();
 	}
 
 	override function update(elapsed:Float)

@@ -6,10 +6,17 @@ class Slime extends Unit
 	{
 		super(X, Y);
 
-		team = -1;
+		team = 2;
 		speed = 3;
 
+		trace("NEW SLIME");
+
+		name = "slime";
+
+		trace(tile_position.x, tile_position.y);
+
 		loadAllFromAnimationSet("slime");
+		init();
 	}
 
 	override function update(elapsed:Float)

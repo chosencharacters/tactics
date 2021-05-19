@@ -12,7 +12,8 @@ class Unit extends Actor
 
 	var speed:Int = 0;
 	var max_health:Int = 50;
-	var movement_left:Int = -1;
+
+	public var movement_left:Int = -1;
 
 	var name:String = "";
 
@@ -36,14 +37,16 @@ class Unit extends Actor
 
 	override function update(elapsed:Float)
 	{
-		if (movement_left <= -1)
-			new_turn();
 		select_position();
 		super.update(elapsed);
 	}
 
-	function new_turn()
+	/**
+	 * Refreshes this unit for a new turn
+	 */
+	public function new_turn()
 	{
+		trace('NEW TURN ${name} ${tile_position.x} ${tile_position.y}');
 		movement_left = speed;
 	}
 
@@ -89,8 +92,6 @@ class Unit extends Actor
 			{
 				tile_position.set(move_tile_position.x / level.tile_size, move_tile_position.y / level.tile_size);
 				if (movement_path.length <= 0)
-					state.turns.shift();
-				if (movement_path.length <= 0)
 					REALIZING = false;
 				else
 					move_tile_position = movement_path.shift();
@@ -100,9 +101,9 @@ class Unit extends Actor
 		}
 	}
 
-	public function realize_attack(state:GridState, target_unit:Unit, weapon:WeaponDef)
+	public function realize_attack(state:GridState, target_unit:UnitData, weapon:WeaponDef)
 	{
-		state.attack(get_unit_data(), target_unit.get_unit_data(), weapon);
+		state.attack(state.grid.units.get(uid), target_unit, weapon);
 	}
 
 	function snap_to_grid()
@@ -119,7 +120,7 @@ class Unit extends Actor
 	{
 		SELECTED = true;
 		PlayState.self.selected_unit = this;
-		get_movement_options(PlayState.self.current_grid_state, tile_position);
+		get_movement_options(PlayState.self.current_state, tile_position);
 	}
 
 	function get_movement_options(state:GridState, start:FlxPoint, auto_highlight:Bool = true):Array<SearchNode>
@@ -128,7 +129,7 @@ class Unit extends Actor
 		var start_time:Float = Sys.time();
 		#end
 
-		state.grid.bfs_movement_options(start, start, get_unit_data(), movement_left);
+		state.grid.bfs_movement_options(start, state.grid.units.get(uid));
 
 		movement_options = state.grid.movement_options.get(uid);
 		attack_options = state.grid.attack_options.get(uid);
@@ -162,11 +163,12 @@ class Unit extends Actor
 	{
 		tile_position.x = Math.floor(X);
 		tile_position.y = Math.floor(Y);
-		PlayState.self.regenerate_grid();
+		PlayState.self.regenerate_state();
 	}
 
 	public function select_position()
 	{
+		var state:GridState = PlayState.self.current_state;
 		var SELECT_INPUT:Bool = Ctrl.cursor_select;
 		var CURSOR_POSITION:FlxPoint = PlayState.self.cursor.tile_position;
 
@@ -179,9 +181,7 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				movement_left -= pos.distance;
-
-				PlayState.self.current_grid_state.add_move_turn(this, pos);
+				PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), pos);
 
 				SELECTED = false;
 				Ctrl.cursor_select = false;
@@ -195,11 +195,11 @@ class Unit extends Actor
 			var SELF_MATCH:Bool = CURSOR_POSITION.x == tile_position.x && CURSOR_POSITION.y == tile_position.y;
 			if (CURSOR_MATCH && !SELF_MATCH)
 			{
-				var enemy_unit:Unit = PlayState.self.current_grid_state.find_unit_actual_in_units(pos.unit);
-				var path_nodes:Array<SearchNode> = PlayState.self.current_grid_state.grid.get_path_as_nodes(pos.path);
+				var enemy_unit:UnitData = pos.unit;
+				var path_nodes:Array<SearchNode> = PlayState.self.current_state.grid.get_path_as_nodes(pos.path);
 
-				PlayState.self.current_grid_state.add_move_turn(this, path_nodes[path_nodes.length - 1], false);
-				PlayState.self.current_grid_state.add_attack_turn(this, enemy_unit, pos.weapon, true);
+				PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
+				PlayState.self.current_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
 
 				movement_left = 0;
 
@@ -233,6 +233,14 @@ class Unit extends Actor
 	{
 		tile_position.x = data.x;
 		tile_position.y = data.y;
+		health = data.health;
+		max_health = data.max_health;
 		snap_to_grid();
+	}
+
+	function init()
+	{
+		movement_left = speed;
+		health = max_health;
 	}
 }

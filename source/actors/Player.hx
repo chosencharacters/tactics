@@ -26,6 +26,8 @@ class Player extends Unit
 				knockback: 3
 			}
 		];
+
+		init();
 	}
 
 	override function update(elapsed:Float)

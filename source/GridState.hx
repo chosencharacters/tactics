@@ -1,14 +1,13 @@
+import Utils.Cloner;
 import actors.Weapon.WeaponAttackType;
 import actors.Weapon.WeaponDef;
 
 typedef GridStateTurn =
 {
 	turn_type:String,
-	source_unit:Unit,
-	target_unit:Unit,
+	source_unit:UnitData,
+	target_unit:UnitData,
 	weapon:WeaponDef,
-	move_x:Int,
-	move_y:Int,
 	path:Array<Int>
 }
 
@@ -46,10 +45,13 @@ class GridState
 {
 	public var turns:Array<GridStateTurn> = [];
 
-	var turn_index:Int = 0;
-	var score:Int = 0;
+	public var turn_index:Int = 0;
+
+	public var score:Float = 0;
+
 	var ready_for_next_turn:Bool = false;
-	var realizing_state:Bool = false;
+
+	public var realizing_state:Bool = false;
 
 	public var grid:GridArray;
 	public var active_team:Int = 1;
@@ -57,9 +59,12 @@ class GridState
 
 	var total_turns:Int = 0;
 
-	public function new()
+	/**is the game over?**/
+	public var game_over:Bool = false;
+
+	public function new(?gridINT:Array<Int>, ?units:Array<UnitData>)
 	{
-		regen_grid();
+		regen_grid(gridINT, units);
 	}
 
 	public function update()
@@ -68,39 +73,79 @@ class GridState
 			realize_state();
 	}
 
-	function regen_grid()
+	function regen_grid(?gridINT:Array<Int>, ?units:Array<UnitData>)
 	{
-		grid = new GridArray(PlayState.self.level.col.getData(true), unit_data_from_group(PlayState.self.units));
+		var cloner:Cloner = new Cloner();
+		gridINT = gridINT != null ? gridINT.copy() : PlayState.self.level.col.getData(true);
+		units = units != null ? cloner.cloneArray(units) : unit_data_from_group(PlayState.self.units);
+		grid = new GridArray(gridINT, units);
 	}
 
-	function realize_state()
+	public function realize_state(set:Bool = false)
 	{
+		if (set)
+		{
+			realizing_state = true;
+			turn_index = 0;
+			return;
+		}
+		if (turns.length > turn_index)
+		{
+			var turn:GridStateTurn = turns[turn_index];
+			var source_unit:Unit = unit_from_unit_data(turn.source_unit);
+
+			switch (turn.turn_type)
+			{
+				case "move":
+					source_unit.realize_move(this, turn);
+					if (!source_unit.REALIZING)
+					{
+						trace("MOVE END");
+						source_unit.movement_left = turn.source_unit.movement_left - turn.path.length;
+						regen_grid();
+						turn_index++;
+					}
+				case "attack":
+					source_unit.realize_attack(this, turn.target_unit, turn.weapon);
+					if (!source_unit.REALIZING)
+					{
+						trace("ATTACK END");
+						regen_grid();
+						turn_index++;
+					}
+			}
+		}
+		if (turn_index == turns.length || turns.length == 0)
+		{
+			trace("TURN SET END");
+			turn_index = 0;
+			realizing_state = false;
+			PlayState.self.regenerate_state();
+		}
+	}
+
+	public function soft_transition_state():GridState
+	{
+		var new_state:GridState = new GridState(grid.array, grid.units_array());
+
 		if (turns.length > 0)
 		{
 			var turn:GridStateTurn = turns[0];
 			switch (turn.turn_type)
 			{
 				case "move":
-					turn.source_unit.realize_move(this, turn);
-					if (!turn.source_unit.REALIZING)
-					{
-						regen_grid();
-						turns.shift();
-					}
+					var uid:Int = turn.source_unit.uid;
+					grid.units.get(uid).x = grid.nodes[turn.path[turn.path.length - 1]].x;
+					grid.units.get(uid).y = grid.nodes[turn.path[turn.path.length - 1]].y;
 				case "attack":
-					turn.source_unit.realize_attack(this, turn.target_unit, turn.weapon);
-					if (!turn.source_unit.REALIZING)
-					{
-						regen_grid();
-						turns.shift();
-					}
+					// pass
 			}
 		}
-		if (turns.length <= 0)
-			PlayState.self.regenerate_grid();
+
+		return new_state;
 	}
 
-	public function add_move_turn(unit:Unit, node:SearchNode, realize_state_set:Bool = true)
+	public function add_move_turn(unit:UnitData, node:SearchNode, realize_state_set:Bool = true)
 	{
 		var turn:GridStateTurn = empty_turn();
 		turn.source_unit = unit;
@@ -112,12 +157,13 @@ class GridState
 		realizing_state = realizing_state || realize_state_set;
 	}
 
-	public function add_attack_turn(source_unit:Unit, target_unit:Unit, weapon:WeaponDef, realize_state_set:Bool = true)
+	public function add_attack_turn(source_unit:UnitData, target_unit:UnitData, weapon:WeaponDef, realize_state_set:Bool = true)
 	{
 		var turn:GridStateTurn = empty_turn();
 		turn.source_unit = source_unit;
 		turn.target_unit = target_unit;
 		turn.turn_type = "attack";
+		turn.weapon = weapon;
 
 		turns.push(turn);
 
@@ -130,19 +176,25 @@ class GridState
 			turn_type: "",
 			source_unit: null,
 			target_unit: null,
-			move_x: -1,
-			move_y: -1,
 			weapon: null,
 			path: []
 		};
 	}
 
-	function unit_data_from_group(units:FlxTypedGroup<Unit>):Array<UnitData>
+	public function unit_data_from_group(units:FlxTypedGroup<Unit>):Array<UnitData>
 	{
 		var data_array:Array<UnitData> = [];
 		for (u in units)
 			data_array.push(u.get_unit_data());
 		return data_array;
+	}
+
+	public function unit_from_unit_data(data:UnitData):Unit
+	{
+		for (unit in PlayState.self.units.members)
+			if (unit.uid == data.uid)
+				return unit;
+		throw "invalid unit with id " + data.uid;
 	}
 
 	public function attack(source_unit:UnitData, attack_unit:UnitData, weapon:WeaponDef)
@@ -190,7 +242,7 @@ class GridState
 		return null;
 	}
 
-	function write_state_to_game()
+	public function write_state_to_game()
 	{
 		for (unit_data in grid.units)
 			for (unit in PlayState.self.units)
@@ -202,7 +254,7 @@ class GridState
 class GridArray
 {
 	public var array:Array<Int> = [];
-	public var units:Array<UnitData> = [];
+	public var units:Map<Int, UnitData> = [];
 	public var nodes:Array<SearchNode> = [];
 
 	public var width_in_tiles:Int = 0;
@@ -216,7 +268,8 @@ class GridArray
 	public function new(ArrayCopy:Array<Int>, units_array:Array<UnitData>)
 	{
 		array = ArrayCopy;
-		units = units_array;
+		for (unit in units_array)
+			units.set(unit.uid, unit);
 
 		width_in_tiles = PlayState.self.level.widthInTiles;
 		height_in_tiles = PlayState.self.level.heightInTiles;
@@ -308,10 +361,9 @@ class GridArray
 	 * Breadth first search, repurposed to get available movement positions
 	 * @param state 
 	 * @param start 
-	 * @param goal 
 	 * @return Array<FlxPoint>
 	 */
-	public function bfs_movement_options(start:FlxPoint, goal:FlxPoint, unit:UnitData, speed:Int):Array<SearchNode>
+	public function bfs_movement_options(start:FlxPoint, unit:UnitData):Array<SearchNode>
 	{
 		var start_node:SearchNode = getNode(Math.floor(start.x), Math.floor(start.y));
 		var open_set:Array<SearchNode> = [start_node];
@@ -333,34 +385,37 @@ class GridArray
 			current = open_set.shift();
 			current.visited = true;
 			visited.push(current);
-			if (current.distance < speed)
-				for (neighbor in get_neighbors(current, unit))
-					if (!neighbor.visited)
-					{
-						neighbor.path = current.path.concat([current.uid]);
-						neighbor.distance = neighbor.path.length;
+			// if (current.distance < unit.movement_left)
+			for (neighbor in get_neighbors(current, unit))
+				if (!neighbor.visited)
+				{
+					neighbor.path = current.path.concat([current.uid]);
+					neighbor.distance = neighbor.path.length;
 
+					if (neighbor.distance < unit.movement_left)
+					{
 						var cur_atk_opts:Array<SearchNode> = attack_options.get(unit.uid);
-						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor, unit.moved_already);
+						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor);
 
 						cur_atk_opts = combine_node_arrays(cur_atk_opts, new_atk_opts);
 
 						attack_options.set(unit.uid, cur_atk_opts);
-
-						set_add(open_set, neighbor);
 					}
+
+					set_add(open_set, neighbor);
+				}
 		}
 
 		var response_array:Array<SearchNode> = [];
 
-		for (v in visited)
+		for (node in visited)
 		{
-			var VALID_VISITED:Bool = true;
+			var VALID_VISITED:Bool = node.distance <= unit.movement_left;
 			for (u in units)
-				if (u.x == v.x && u.y == v.y)
+				if (u.x == node.x && u.y == node.y)
 					VALID_VISITED = false;
 			if (VALID_VISITED)
-				response_array.push(v);
+				response_array.push(node);
 		}
 
 		movement_options.set(unit.uid, response_array);
@@ -393,13 +448,14 @@ class GridArray
 			node.visited = false;
 
 		for (node in movement_range)
-			attack_options = attack_options.concat(calculate_immediate_attack_options(unit, node, moved_already));
+			attack_options = attack_options.concat(calculate_immediate_attack_options(unit, node));
 
 		return attack_options;
 	}
 
-	public function calculate_immediate_attack_options(unit:UnitData, node:SearchNode, moved_already:Bool = false):Array<SearchNode>
+	public function calculate_immediate_attack_options(unit:UnitData, node:SearchNode):Array<SearchNode>
 	{
+		var moved_already:Bool = unit.moved_already;
 		var attack_options:Array<SearchNode> = [];
 
 		for (weapon in unit.weapons)
@@ -427,7 +483,7 @@ class GridArray
 	 * @param node node to end at (usually the "current" node)
 	 * @return Float heuristic value i.e. distance two points
 	 */
-	function manhatten_heuristic(start:SearchNode, end:SearchNode):Float
+	public function manhatten_heuristic(start:SearchNode, end:SearchNode):Float
 	{
 		var XX:Float = end.x - start.x;
 		var YY:Float = end.y - start.y;
@@ -532,5 +588,13 @@ class GridArray
 		for (node_id in path)
 			path_nodes.push(nodes[node_id]);
 		return path_nodes;
+	}
+
+	public function units_array():Array<UnitData>
+	{
+		var units_array:Array<UnitData> = [];
+		for (key in units.keys())
+			units_array.push(units.get(key));
+		return units_array;
 	}
 }

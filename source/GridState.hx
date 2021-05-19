@@ -93,7 +93,6 @@ class GridState
 		{
 			var turn:GridStateTurn = turns[turn_index];
 			var source_unit:Unit = unit_from_unit_data(turn.source_unit);
-			trace(turns.length, turn_index);
 
 			switch (turn.turn_type)
 			{
@@ -101,7 +100,7 @@ class GridState
 					source_unit.realize_move(this, turn);
 					if (!source_unit.REALIZING)
 					{
-						trace("MOVE TURN END");
+						trace("MOVE END");
 						source_unit.movement_left = turn.source_unit.movement_left - turn.path.length;
 						regen_grid();
 						turn_index++;
@@ -110,7 +109,7 @@ class GridState
 					source_unit.realize_attack(this, turn.target_unit, turn.weapon);
 					if (!source_unit.REALIZING)
 					{
-						trace("ATTACK TURN END");
+						trace("ATTACK END");
 						regen_grid();
 						turn_index++;
 					}
@@ -164,6 +163,7 @@ class GridState
 		turn.source_unit = source_unit;
 		turn.target_unit = target_unit;
 		turn.turn_type = "attack";
+		turn.weapon = weapon;
 
 		turns.push(turn);
 
@@ -392,12 +392,15 @@ class GridArray
 					neighbor.path = current.path.concat([current.uid]);
 					neighbor.distance = neighbor.path.length;
 
-					var cur_atk_opts:Array<SearchNode> = attack_options.get(unit.uid);
-					var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor);
+					if (neighbor.distance < unit.movement_left)
+					{
+						var cur_atk_opts:Array<SearchNode> = attack_options.get(unit.uid);
+						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor);
 
-					cur_atk_opts = combine_node_arrays(cur_atk_opts, new_atk_opts);
+						cur_atk_opts = combine_node_arrays(cur_atk_opts, new_atk_opts);
 
-					attack_options.set(unit.uid, cur_atk_opts);
+						attack_options.set(unit.uid, cur_atk_opts);
+					}
 
 					set_add(open_set, neighbor);
 				}

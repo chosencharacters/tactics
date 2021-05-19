@@ -1,5 +1,6 @@
 package states;
 
+import TurnManager;
 import flixel.FlxState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
@@ -27,7 +28,7 @@ class PlayState extends BaseState
 
 	var tick:Int = 30;
 
-	var turn_manager:TurnManager = new TurnManager();
+	public var turn_manager:TurnManager = new TurnManager();
 
 	override public function create()
 	{
@@ -47,6 +48,9 @@ class PlayState extends BaseState
 		ui.add(unit_viewer = new UnitViewer());
 
 		regenerate_state();
+		turn_manager.set_player(1, new HumanPlayerHandler(1));
+		turn_manager.set_player(2, new AI(2));
+		turn_manager.end_turn();
 	}
 
 	public function regenerate_state()
@@ -67,12 +71,7 @@ class PlayState extends BaseState
 
 	override public function update(elapsed:Float)
 	{
-		tick--;
-		if (tick <= 0)
-		{
-			var ai:AI = new AI(2);
-			ai.dumb_ai();
-		}
+		turn_manager.update();
 		sort_units();
 		current_state.update();
 		if (Ctrl.any(Ctrl.reset))

@@ -31,7 +31,6 @@ class Unit extends Actor
 		super(X, Y);
 
 		uid = Utils.get_unused_id();
-		new_turn();
 
 		PlayState.self.units.add(this);
 	}
@@ -42,9 +41,12 @@ class Unit extends Actor
 		super.update(elapsed);
 	}
 
-	function new_turn()
+	/**
+	 * Refreshes this unit for a new turn
+	 */
+	public function new_turn()
 	{
-		trace("NEW TURN");
+		trace('NEW TURN ${name} ${tile_position.x} ${tile_position.y}');
 		movement_left = speed;
 	}
 
@@ -83,10 +85,8 @@ class Unit extends Actor
 			}
 			else if (NOT_ON_Y)
 			{
-				trace("PRE", x);
 				x = tile_x - width / 2;
 				velocity.y = tile_y < my_y ? -vel : vel;
-				trace("POST:", x);
 			}
 			else
 			{

@@ -1,26 +1,22 @@
 import GridState.GridArray;
 
-class AI extends PlayerHandler
+class AI extends ComputerPlayerHandler
 {
-	var team:Int = 0;
 	var activated:Bool = false;
 
 	public function new(Team:Int)
 	{
-		team = Team;
+		super(Team);
 	}
 
 	override function update()
 	{
 		dumb_ai();
+		super.update();
 	}
 
 	public function dumb_ai()
 	{
-		if (activated)
-			return;
-		activated = true;
-
 		var current_state:GridState = PlayState.self.current_state;
 
 		if (current_state.realizing_state)

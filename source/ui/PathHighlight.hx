@@ -13,6 +13,8 @@ class PathHighlight extends FlxSpriteExt
 	var brush:FlxSpriteExt;
 
 	var fade_timer:Int = 0;
+
+	/**The speed the path fades out after the movement is done*/
 	var FADE_TIMER_SET:Int = 5;
 
 	override public function new()

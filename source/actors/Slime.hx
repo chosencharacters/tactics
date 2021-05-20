@@ -1,5 +1,7 @@
 package actors;
 
+import flixel.math.FlxRandom;
+
 class Slime extends Unit
 {
 	public function new(?X:Float = 0, ?Y:Float = 0)
@@ -8,6 +10,7 @@ class Slime extends Unit
 
 		team = 2;
 		speed = 3;
+		max_health = 25;
 
 		trace("NEW SLIME");
 
@@ -16,6 +19,7 @@ class Slime extends Unit
 		trace(tile_position.x, tile_position.y);
 
 		loadAllFromAnimationSet("slime");
+
 		init();
 	}
 

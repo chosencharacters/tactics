@@ -50,7 +50,7 @@ class PlayState extends BaseState
 
 		regenerate_state();
 		turn_manager.set_player(1, new HumanPlayerHandler(1));
-		turn_manager.set_player(2, new AI(2));
+		turn_manager.set_player(2, new BasicAI(2));
 		turn_manager.end_turn();
 	}
 
@@ -91,14 +91,4 @@ class PlayState extends BaseState
 			return a_index > b_index ? 1 : -1;
 		});
 	}
-	/*
-		function quicksort_units(A:Array<Unit>, lo:Int, hi:Int)
-		{
-			if (lo < hi)
-			{
-				var p:Array<Unit> = partition();
-				quicksort_units
-			}
-		}
-	 */
 }

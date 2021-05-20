@@ -1,8 +1,9 @@
 package actors;
 
+import actors.Weapon.WeaponAttackStat;
 import actors.Weapon.WeaponAttackType;
 
-class Player extends Unit
+class Boy extends Unit
 {
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
@@ -18,10 +19,11 @@ class Player extends Unit
 		weapons = [
 			{
 				w_id: Utils.get_unused_id(),
-				name: "gun",
+				name: "sword",
 				attack_type: WeaponAttackType.RANGED,
-				str: 1,
+				primary_stat: WeaponAttackStat.STR,
 				range: 1,
+				might: 1,
 				blindspot: 0,
 				knockback: 3
 			}

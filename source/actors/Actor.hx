@@ -9,9 +9,12 @@ class Actor extends FlxSpriteExt
 
 	public var team:Int = 0;
 
+	var random:FlxRandom;
+
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		level = PlayState.self.level;
+		random = new FlxRandom();
 
 		tile_position.set(X, Y);
 

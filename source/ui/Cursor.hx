@@ -1,5 +1,6 @@
 package ui;
 
+import GridState.GridArray;
 import flixel.text.FlxText;
 import levels.Level;
 
@@ -36,7 +37,36 @@ class Cursor extends FlxSpriteExt
 
 		position_text.text = '${x}, ${y}\n${tile_position.x}, ${tile_position.y}\n'
 			+ (tile_position.y * PlayState.self.current_state.grid.width_in_tiles + tile_position.x);
+
+		if (PlayState.self.selected_unit != null)
+		{
+			highlight_path();
+		}
+
 		super.update(elapsed);
+	}
+
+	function highlight_path()
+	{
+		var grid:GridArray = PlayState.self.current_state.grid;
+		var unit:UnitData = PlayState.self.selected_unit.get_unit_data();
+
+		var source_node:SearchNode = grid.getNode(unit.x, unit.y);
+
+		var movement_options:Array<SearchNode> = grid.movement_options.get(PlayState.self.selected_unit.uid);
+		var attack_options:Array<SearchNode> = grid.attack_options.get(PlayState.self.selected_unit.uid);
+
+		var CURSOR_POSITION:FlxPoint = PlayState.self.cursor.tile_position;
+
+		if (movement_options != null)
+			for (target_node in movement_options)
+				if (CURSOR_POSITION.x == target_node.x && CURSOR_POSITION.y == target_node.y)
+					PlayState.self.select_squares.path_highlight.update_path(source_node, target_node, false);
+
+		if (attack_options != null)
+			for (target_node in attack_options)
+				if (CURSOR_POSITION.x == target_node.x && CURSOR_POSITION.y == target_node.y)
+					PlayState.self.select_squares.path_highlight.update_path(source_node, target_node, true);
 	}
 
 	function select()

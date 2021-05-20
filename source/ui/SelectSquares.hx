@@ -4,18 +4,21 @@ import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 
 class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 {
-	var squares_array:Array<Array<FlxSpriteExt>> = [];
+	public var squares_array:Array<Array<FlxSpriteExt>> = [];
 
 	var width_in_tiles:Int = 0;
 	var height_in_tiles:Int = 0;
 
 	var base_alpha:Float = 0.25;
 
+	public var path_highlight:PathHighlight;
+
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(PlayState.self.level.x, PlayState.self.level.y);
 		create_squares();
 		clear_squares();
+		add(path_highlight = new PathHighlight());
 	}
 
 	function create_squares()
@@ -34,7 +37,7 @@ class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 			squares_array[X] = [];
 		var square:FlxSpriteExt = new FlxSpriteExt(X * PlayState.self.level.tile_size, Y * PlayState.self.level.tile_size);
 		square.loadGraphic(AssetPaths.movable_tile__png);
-		alpha = base_alpha;
+		square.alpha = base_alpha;
 		squares_array[X].push(square);
 		add(square);
 	}
@@ -92,7 +95,7 @@ class SelectSquares extends FlxTypedSpriteGroup<FlxSpriteExt>
 				get_square(col, row).visible = false;
 	}
 
-	function get_square(X:Int, Y:Int):FlxSpriteExt
+	public function get_square(X:Int, Y:Int):FlxSpriteExt
 	{
 		return squares_array[X] != null ? squares_array[X][Y] : null;
 		// return squares_array[Y * width_in_tiles + X];

@@ -59,75 +59,74 @@ class PathArrow extends FlxSpriteExt
 	function create_arrow()
 	{
 		var grid:GridArray = PlayState.self.current_state.grid;
-		var path:Array<Int> = target.path.copy().splice(1, target.path.length - 1).concat([target.y * grid.width_in_tiles + target.x]);
+		var path:Array<Int> = target.path.copy().concat([target.y * grid.width_in_tiles + target.x]);
 
-		trace(target.y * grid.width_in_tiles + target.x);
+		if (path.length < 2)
+			return;
 
-		var WAS_UP:Bool = false;
-		var WAS_DOWN:Bool = false;
-		var WAS_LEFT:Bool = false;
-		var WAS_RIGHT:Bool = false;
+		var WAS_UP:Bool = grid.nodes[path[0]].y > grid.nodes[path[1]].y;
+		var WAS_DOWN:Bool = grid.nodes[path[0]].y < grid.nodes[path[1]].y;
+		var WAS_LEFT:Bool = grid.nodes[path[0]].x > grid.nodes[path[1]].x;
+		var WAS_RIGHT:Bool = grid.nodes[path[0]].x < grid.nodes[path[1]].x;
 
-		trace(path, path.length);
-
-		for (n in 0...path.length)
+		for (n in 1...path.length)
 		{
 			var node:SearchNode = grid.nodes[path[n]];
-			var next_node:SearchNode = grid.nodes[path[n + 1]];
+			var prev_node:SearchNode = grid.nodes[path[n - 1]];
 
-			var GOING_UP:Bool = next_node.y < node.y;
-			var GOING_DOWN:Bool = next_node.y > node.y;
-			var GOING_LEFT:Bool = next_node.x < node.x;
-			var GOING_RIGHT:Bool = next_node.x > node.x;
+			var GOING_UP:Bool = prev_node.y > node.y;
+			var GOING_DOWN:Bool = prev_node.y < node.y;
+			var GOING_LEFT:Bool = prev_node.x > node.x;
+			var GOING_RIGHT:Bool = prev_node.x < node.x;
 			var CAP:Bool = n == path.length - 1;
 
 			var arrow_dir:PathArrowDir = NONE;
 
-			if (GOING_UP)
+			if (WAS_UP)
 			{
 				arrow_dir = UP;
-				if (WAS_LEFT)
+				if (GOING_LEFT)
 					arrow_dir = BOTTOM_LEFT;
-				if (WAS_RIGHT)
+				if (GOING_RIGHT)
 					arrow_dir = BOTTOM_RIGHT;
 				if (CAP)
 					arrow_dir = END_UP;
 			}
 
-			if (GOING_DOWN)
+			if (WAS_DOWN)
 			{
 				arrow_dir = DOWN;
-				if (WAS_LEFT)
+				if (GOING_LEFT)
 					arrow_dir = TOP_LEFT;
-				if (WAS_RIGHT)
+				if (GOING_RIGHT)
 					arrow_dir = TOP_RIGHT;
 				if (CAP)
 					arrow_dir = END_DOWN;
 			}
 
-			if (GOING_LEFT)
+			if (WAS_LEFT)
 			{
 				arrow_dir = LEFT;
-				if (WAS_UP)
+				if (GOING_UP)
 					arrow_dir = BOTTOM_LEFT;
-				if (WAS_DOWN)
+				if (GOING_DOWN)
 					arrow_dir = TOP_LEFT;
 				if (CAP)
 					arrow_dir = END_LEFT;
 			}
 
-			if (GOING_RIGHT)
+			if (WAS_RIGHT)
 			{
 				arrow_dir = RIGHT;
-				if (WAS_UP)
+				if (GOING_UP)
 					arrow_dir = BOTTOM_RIGHT;
-				if (WAS_DOWN)
+				if (GOING_DOWN)
 					arrow_dir = TOP_RIGHT;
 				if (CAP)
 					arrow_dir = END_RIGHT;
 			}
 
-			trace("CURRENT " + node.x, node.y, "NEXT " + next_node.x, next_node.y, 'UP ${GOING_UP} ${WAS_UP}', 'DOWN ${GOING_DOWN} ${WAS_DOWN}',
+			trace("CURRENT " + node.x, node.y, "NEXT " + prev_node.x, prev_node.y, 'UP ${GOING_UP} ${WAS_UP}', 'DOWN ${GOING_DOWN} ${WAS_DOWN}',
 				'LEFT ${GOING_LEFT} ${WAS_LEFT}', 'RIGHT ${GOING_RIGHT} ${WAS_RIGHT}', 'CURRENT ${arrow_dir}');
 
 			WAS_UP = GOING_UP;

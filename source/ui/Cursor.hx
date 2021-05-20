@@ -36,6 +36,16 @@ class Cursor extends FlxSpriteExt
 
 		position_text.text = '${x}, ${y}\n${tile_position.x}, ${tile_position.y}\n'
 			+ (tile_position.y * PlayState.self.current_state.grid.width_in_tiles + tile_position.x);
+
+		if (PlayState.self.selected_unit != null)
+		{
+			var unit:UnitData = PlayState.self.selected_unit.get_unit_data();
+			var source_node:SearchNode = PlayState.self.current_state.grid.getNode(unit.x, unit.y);
+			var target_node:SearchNode = PlayState.self.current_state.grid.nodes[level.getTileIndexByCoords(FlxG.mouse.getPosition())];
+
+			PlayState.self.path_arrow.update_arrow(source_node, target_node);
+		}
+
 		super.update(elapsed);
 	}
 

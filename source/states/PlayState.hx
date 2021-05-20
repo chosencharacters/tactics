@@ -6,6 +6,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
 import levels.Level;
 import ui.Cursor;
+import ui.PathArrow;
 import ui.SelectSquares;
 import ui.UnitViewer;
 
@@ -25,6 +26,7 @@ class PlayState extends BaseState
 	public var current_state:GridState;
 
 	public var unit_viewer:UnitViewer;
+	public var path_arrow:PathArrow;
 
 	var tick:Int = 30;
 
@@ -51,6 +53,8 @@ class PlayState extends BaseState
 		turn_manager.set_player(1, new HumanPlayerHandler(1));
 		turn_manager.set_player(2, new AI(2));
 		turn_manager.end_turn();
+
+		add(path_arrow = new PathArrow());
 	}
 
 	public function regenerate_state()

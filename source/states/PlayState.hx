@@ -6,6 +6,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.text.FlxText;
 import levels.Level;
 import ui.Cursor;
+import ui.PathHighlight;
 import ui.SelectSquares;
 import ui.UnitViewer;
 

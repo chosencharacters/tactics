@@ -30,6 +30,8 @@ class Unit extends Actor
 	var movement_options:Array<SearchNode>;
 	var attack_options:Array<SearchNode>;
 
+	var exhausted:Bool = false;
+
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
@@ -41,6 +43,7 @@ class Unit extends Actor
 
 	override function update(elapsed:Float)
 	{
+		color = exhausted ? FlxColor.GRAY : FlxColor.WHITE;
 		select_position();
 		super.update(elapsed);
 	}
@@ -51,9 +54,15 @@ class Unit extends Actor
 	public function new_turn()
 	{
 		trace('NEW TURN ${name} ${tile_position.x} ${tile_position.y}');
+		exhausted = false;
 		movement_left = speed;
 	}
 
+	/**
+	 * Moves the player on a path, does the animation, for non animation use teleport()
+	 * @param state current game state
+	 * @param turn grid state turn
+	 */
 	public function realize_move(state:GridState, turn:GridStateTurn)
 	{
 		if (!REALIZING && turn.path.length > 0)
@@ -205,8 +214,6 @@ class Unit extends Actor
 				PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
 				PlayState.self.current_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
 
-				movement_left = 0;
-
 				SELECTED = false;
 				Ctrl.cursor_select = false;
 				PlayState.self.select_squares.select_squares([]);
@@ -232,7 +239,8 @@ class Unit extends Actor
 			uid: uid,
 			weapons: weapons,
 			health: health,
-			moved_already: speed != movement_left
+			moved_already: speed != movement_left,
+			exhausted: exhausted
 		};
 	}
 
@@ -242,6 +250,8 @@ class Unit extends Actor
 		tile_position.y = data.y;
 		health = data.health;
 		max_health = data.max_health;
+		exhausted = data.exhausted;
+
 		snap_to_grid();
 	}
 

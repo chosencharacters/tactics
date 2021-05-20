@@ -42,7 +42,8 @@ typedef UnitData =
 	movement_left:Int,
 	health:Float,
 	weapons:Array<WeaponDef>,
-	moved_already:Bool
+	moved_already:Bool,
+	exhausted:Bool
 }
 
 class GridState
@@ -105,8 +106,15 @@ class GridState
 					if (!source_unit.REALIZING)
 					{
 						trace("MOVE END");
-						source_unit.movement_left = turn.source_unit.movement_left - turn.path.length;
+
+						var movement_left:Int = turn.source_unit.movement_left - turn.path.length;
+
 						regen_grid();
+
+						source_unit.movement_left = movement_left;
+						grid.units.get(source_unit.uid).movement_left = movement_left;
+						exhausted_check(grid.units.get(source_unit.uid));
+
 						turn_index++;
 					}
 				case "attack":
@@ -114,7 +122,15 @@ class GridState
 					if (!source_unit.REALIZING)
 					{
 						trace("ATTACK END");
+
+						exhausted_check(turn.source_unit);
 						regen_grid();
+
+						// attacking always causes exhaustion
+						source_unit.movement_left = 0;
+						grid.units.get(source_unit.uid).movement_left = 0;
+						exhausted_check(grid.units.get(source_unit.uid));
+
 						turn_index++;
 					}
 			}
@@ -124,6 +140,7 @@ class GridState
 			trace("TURN SET END");
 			turn_index = 0;
 			realizing_state = false;
+			write_state_to_game();
 			PlayState.self.regenerate_state();
 		}
 	}
@@ -159,6 +176,19 @@ class GridState
 		turns.push(turn);
 
 		realizing_state = realizing_state || realize_state_set;
+	}
+
+	/**
+	 * Checks and sets if the unit is exhausted.
+	 * Basic here but can be extended to do a whole bunch of things
+	 * @param source_unit unit to check
+	 */
+	public function exhausted_check(source_unit:UnitData):UnitData
+	{
+		if (source_unit.movement_left <= 0)
+			source_unit.exhausted = true;
+		trace(source_unit.name, source_unit.movement_left, source_unit.exhausted);
+		return source_unit;
 	}
 
 	public function add_attack_turn(source_unit:UnitData, target_unit:UnitData, weapon:WeaponDef, realize_state_set:Bool = true)

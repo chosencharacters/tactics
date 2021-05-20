@@ -28,8 +28,6 @@ class AI extends ComputerPlayerHandler
 			{
 				trace(unit.movement_left);
 
-				current_state.find_unit_actual_in_units(unit).color = FlxColor.GRAY;
-
 				var states:Array<GridState> = [];
 
 				states = states.concat(simulate_all_turns(current_state, unit));

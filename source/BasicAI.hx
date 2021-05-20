@@ -26,8 +26,6 @@ class BasicAI extends ComputerPlayerHandler
 			// trace(unit.movement_left);
 			if (unit.team == team && unit.movement_left > 0)
 			{
-				trace(unit.movement_left);
-
 				var states:Array<GridState> = [];
 
 				states = states.concat(simulate_all_turns(current_state, unit));
@@ -38,7 +36,6 @@ class BasicAI extends ComputerPlayerHandler
 				var best_state:GridState = get_best_state(states);
 				best_state.realize_state(true);
 				PlayState.self.current_state = best_state;
-				trace("REALIZE STATE START" + current_state.realizing_state);
 
 				return;
 			}

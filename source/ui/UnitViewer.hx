@@ -16,6 +16,11 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 
 	var hp_bar:FlxBar;
 
+	var unit_copy:FlxSprite;
+	var unit_copy_base_position:FlxPoint = new FlxPoint(118, 90);
+	var unit_copy_base_dimensions:FlxPoint = new FlxPoint(44, 44);
+	var unit_copy_base_color:FlxColor = 0xff585651;
+
 	public function new()
 	{
 		super();
@@ -42,6 +47,11 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 		hp_bar = new FlxBar(22, 28, FlxBarFillDirection.LEFT_TO_RIGHT, 136, 8);
 		hp_bar.createFilledBar(0xff32222c, 0xff1bff00);
 		add(hp_bar);
+
+		unit_copy = new FlxSprite();
+		unit_copy.makeGraphic(Math.floor(unit_copy_base_dimensions.x), Math.floor(unit_copy_base_dimensions.y), unit_copy_base_color);
+		clear_unit_copy();
+		add(unit_copy);
 
 		setPosition(FlxG.width - width, FlxG.height - height);
 
@@ -70,12 +80,12 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 		name_text.text = unit.name;
 
 		hp_bar.updateBar();
+
+		copy_unit();
 	}
 
 	public function clear_data()
 	{
-		trace("data clear");
-
 		hp_bar.value = 0;
 
 		hp_text.text = "";
@@ -84,5 +94,24 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 		moves_left.animation.frameIndex = moves_max.animation.frameIndex = 0;
 
 		hp_bar.updateBar();
+		clear_unit_copy();
+	}
+
+	function clear_unit_copy()
+	{
+		unit_copy.graphic.bitmap.fillRect(unit_copy.graphic.bitmap.rect, unit_copy_base_color);
+		unit_copy.setPosition(x + unit_copy_base_position.x, y + unit_copy_base_position.y);
+		unit_copy.scrollFactor.set();
+	}
+
+	function copy_unit()
+	{
+		clear_unit_copy();
+		if (PlayState.self.selected_unit != null)
+		{
+			unit_copy.stamp(PlayState.self.selected_unit, Math.floor(unit_copy_base_dimensions.x / 2 - PlayState.self.selected_unit.width / 2),
+				Math.floor(unit_copy_base_dimensions.y - PlayState.self.selected_unit.height));
+			unit_copy.flipX = PlayState.self.selected_unit.flipX;
+		}
 	}
 }

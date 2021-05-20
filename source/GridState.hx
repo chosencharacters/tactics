@@ -98,11 +98,13 @@ class GridState
 		{
 			var turn:GridStateTurn = turns[turn_index];
 			var source_unit:Unit = unit_from_unit_data(turn.source_unit);
+			PlayState.self.selected_unit = source_unit;
 
 			switch (turn.turn_type)
 			{
 				case "move":
 					source_unit.realize_move(this, turn);
+
 					if (!source_unit.REALIZING)
 					{
 						trace("MOVE END");
@@ -187,7 +189,6 @@ class GridState
 	{
 		if (source_unit.movement_left <= 0)
 			source_unit.exhausted = true;
-		trace(source_unit.name, source_unit.movement_left, source_unit.exhausted);
 		return source_unit;
 	}
 

@@ -44,7 +44,11 @@ class Unit extends Actor
 
 	override function update(elapsed:Float)
 	{
-		color = exhausted ? FlxColor.GRAY : FlxColor.WHITE;
+		if (team == PlayState.self.turn_manager.current_team)
+			color = exhausted ? FlxColor.GRAY : FlxColor.WHITE;
+		else
+			color = FlxColor.WHITE;
+
 		select_position();
 		super.update(elapsed);
 	}
@@ -110,7 +114,6 @@ class Unit extends Actor
 			{
 				tile_position.set(move_tile_position.x / level.tile_size, move_tile_position.y / level.tile_size);
 				movement_path_nodes.shift();
-				trace(movement_path_nodes.length);
 
 				if (movement_path.length <= 0)
 					REALIZING = false;

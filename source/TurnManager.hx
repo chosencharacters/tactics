@@ -23,8 +23,6 @@ class TurnManager
 
 	function new_turn()
 	{
-		trace("oooo");
-
 		for (unit in PlayState.self.units)
 		{
 			unit.color = FlxColor.WHITE;

@@ -53,8 +53,6 @@ class PathHighlight extends FlxSpriteExt
 			for (node in PathNodes)
 				draw_path.push(node.uid);
 
-		trace("Highlight");
-
 		fade_timer = FADE_TIMER_SET;
 		alpha = ALPHA_SET;
 		clear_all();
@@ -72,8 +70,6 @@ class PathHighlight extends FlxSpriteExt
 		var grid:GridArray = PlayState.self.current_state.grid;
 
 		var path:Array<Int> = draw_path.copy();
-
-		trace(path);
 
 		for (n in path)
 		{

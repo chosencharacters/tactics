@@ -50,7 +50,7 @@ class PlayState extends BaseState
 
 		regenerate_state();
 		turn_manager.set_player(1, new HumanPlayerHandler(1));
-		turn_manager.set_player(2, new AI(2));
+		turn_manager.set_player(2, new BasicAI(2));
 		turn_manager.end_turn();
 	}
 

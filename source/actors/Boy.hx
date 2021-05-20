@@ -3,7 +3,7 @@ package actors;
 import actors.Weapon.WeaponAttackStat;
 import actors.Weapon.WeaponAttackType;
 
-class Player extends Unit
+class Boy extends Unit
 {
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
@@ -22,7 +22,6 @@ class Player extends Unit
 				name: "sword",
 				attack_type: WeaponAttackType.RANGED,
 				primary_stat: WeaponAttackStat.STR,
-				str: 1,
 				range: 1,
 				might: 1,
 				blindspot: 0,

@@ -6,6 +6,7 @@ typedef WeaponDef =
 	name:String,
 	attack_type:WeaponAttackType,
 	primary_stat:WeaponAttackStat,
+	range:Int,
 	might:Int,
 	blindspot:Int,
 	knockback:Int

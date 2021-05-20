@@ -1,14 +1,15 @@
 package actors;
 
-class Grill extends Unit
+class Girl extends Unit
 {
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
 		super(X, Y);
 
 		team = 1;
-		speed = 3;
+		speed = 4;
 		name = "Alex";
+		max_health = 35;
 
 		loadAllFromAnimationSet("girl");
 		init();

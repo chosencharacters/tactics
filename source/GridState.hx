@@ -645,4 +645,9 @@ class GridArray
 			units_array.push(units.get(key));
 		return units_array;
 	}
+
+	public function get_unit_data_node(unit_data:UnitData):SearchNode
+	{
+		return getNode(unit_data.x, unit_data.y);
+	}
 }

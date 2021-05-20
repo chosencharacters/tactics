@@ -1,6 +1,6 @@
 import GridState.GridArray;
 
-class AI extends ComputerPlayerHandler
+class BasicAI extends ComputerPlayerHandler
 {
 	var activated:Bool = false;
 

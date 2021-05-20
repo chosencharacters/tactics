@@ -14,8 +14,8 @@
 	</animSet>
 
 	<animSet image = "slime" path = "assets\images\chars">
-		<anim name = "idle">0</anim>
-		<anim name = "move">1t3</anim>
-		<anim name = "hit">1t3</anim>
+		<anim name = "idle" fps = "8">0t3</anim>
+		<anim name = "move">0t3</anim>
+		<anim name = "hit">0t3</anim>
 	</animSet>
 </root>

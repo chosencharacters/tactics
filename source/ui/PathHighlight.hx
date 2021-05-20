@@ -7,15 +7,17 @@ import GridState.GridArray;
  */
 class PathHighlight extends FlxSpriteExt
 {
-	var source:SearchNode;
-	var target:SearchNode;
+	var draw_path:Array<Int>;
 
 	var brush:FlxSpriteExt;
 
 	var fade_timer:Int = 0;
 
+	/** Transparency of the path */
+	var ALPHA_SET:Float = 0.75;
+
 	/**The speed the path fades out after the movement is done*/
-	var FADE_TIMER_SET:Int = 5;
+	var FADE_TIMER_SET:Int = 10;
 
 	override public function new()
 	{
@@ -32,34 +34,29 @@ class PathHighlight extends FlxSpriteExt
 		if (fade_timer == 0)
 			clear_all();
 		if (fade_timer != FADE_TIMER_SET && fade_timer > 0)
-			alpha = fade_timer / FADE_TIMER_SET;
+			alpha = (fade_timer / FADE_TIMER_SET) * ALPHA_SET;
 		fade_timer--;
 		super.update(elapsed);
 	}
 
-	function select_test_unit(unit:Unit)
-	{
-		var data:UnitData = unit.get_unit_data();
-
-		PlayState.self.current_state.grid.bfs_movement_options(unit.tile_position, data);
-
-		source = PlayState.self.current_state.grid.getNode(data.x, data.y);
-		target = PlayState.self.current_state.grid.getNode(0, 0);
-	}
-
 	/**
 	 * Updates the path
-	 * @param Source starting position
-	 * @param Target ending position
+	 * @param Path highlightable path
 	 */
-	public function update_path(Source:SearchNode, Target:SearchNode, AttackMode:Bool = false)
+	public function update_path(?PathNodes:Array<SearchNode>, ?PathInt:Array<Int>, ?AttackMode:Bool = false)
 	{
-		source = Source;
-		target = Target;
+		draw_path = [];
+
+		if (PathInt != null)
+			draw_path = PathInt;
+		if (PathNodes != null)
+			for (node in PathNodes)
+				draw_path.push(node.uid);
+
+		trace("Highlight");
 
 		fade_timer = FADE_TIMER_SET;
-		alpha = 1;
-
+		alpha = ALPHA_SET;
 		clear_all();
 		highlight_squares(AttackMode);
 	}
@@ -69,12 +66,14 @@ class PathHighlight extends FlxSpriteExt
 	 */
 	function highlight_squares(AttackMode:Bool)
 	{
-		if (target == null)
+		if (draw_path == null || draw_path.length <= 0)
 			return;
 
 		var grid:GridArray = PlayState.self.current_state.grid;
 
-		var path:Array<Int> = target.path.copy().concat([target.y * grid.width_in_tiles + target.x]);
+		var path:Array<Int> = draw_path.copy();
+
+		trace(path);
 
 		for (n in path)
 		{

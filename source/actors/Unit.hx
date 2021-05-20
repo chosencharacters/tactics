@@ -22,6 +22,7 @@ class Unit extends Actor
 	var int:Int = 1;
 
 	var movement_path:Array<FlxPoint> = new Array<FlxPoint>();
+	var movement_path_nodes:Array<SearchNode> = [];
 
 	public var uid:Int = 0;
 
@@ -30,7 +31,7 @@ class Unit extends Actor
 	var movement_options:Array<SearchNode>;
 	var attack_options:Array<SearchNode>;
 
-	var exhausted:Bool = false;
+	public var exhausted:Bool = false;
 
 	public function new(?X:Float = 0, ?Y:Float = 0)
 	{
@@ -59,15 +60,16 @@ class Unit extends Actor
 	}
 
 	/**
-	 * Moves the player on a path, does the animation, for non animation use teleport()
+	 * Moves the unit on a path, does the animation, for non animation use teleport()
 	 * @param state current game state
 	 * @param turn grid state turn
 	 */
 	public function realize_move(state:GridState, turn:GridStateTurn)
 	{
-		if (!REALIZING && turn.path.length > 0)
+		if (turn.path.length > 0 && !REALIZING)
 		{
-			for (node in state.grid.get_path_as_nodes(turn.path))
+			movement_path_nodes = state.grid.get_path_as_nodes(turn.path);
+			for (node in movement_path_nodes)
 				movement_path.push(FlxPoint.weak(node.x * level.tile_size, node.y * level.tile_size));
 
 			move_tile_position = movement_path.shift();
@@ -82,6 +84,8 @@ class Unit extends Actor
 			anim("move");
 			var vel:Int = 300;
 
+			PlayState.self.select_squares.path_highlight.update_path(movement_path_nodes);
+
 			velocity.set(0, 0);
 			var tile_x:Int = Math.floor(move_tile_position.x + level.tile_size / 2);
 			var my_x:Int = Math.floor(x + width / 2);
@@ -91,6 +95,7 @@ class Unit extends Actor
 
 			var NOT_ON_X:Bool = tile_x < my_x - 4 || tile_x > my_x + 4;
 			var NOT_ON_Y:Bool = tile_y < my_y - 4 || tile_y > my_y + 4;
+
 			if (NOT_ON_X)
 			{
 				velocity.x = tile_x < my_x + 4 ? -vel : vel;
@@ -104,6 +109,9 @@ class Unit extends Actor
 			else
 			{
 				tile_position.set(move_tile_position.x / level.tile_size, move_tile_position.y / level.tile_size);
+				movement_path_nodes.shift();
+				trace(movement_path_nodes.length);
+
 				if (movement_path.length <= 0)
 					REALIZING = false;
 				else

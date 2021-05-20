@@ -402,7 +402,7 @@
 		}
 	], "entities": [
 		{
-			"identifier": "Player",
+			"identifier": "Boy",
 			"uid": 22,
 			"tags": ["friendly"],
 			"width": 32,
@@ -427,7 +427,7 @@
 			"fieldDefs": []
 		},
 		{
-			"identifier": "Grill",
+			"identifier": "Girl",
 			"uid": 24,
 			"tags": ["friendly"],
 			"width": 32,
@@ -559,7 +559,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Player",
+							"__identifier": "Boy",
 							"__grid": [3,4],
 							"__pivot": [0,0],
 							"__tile": { "tilesetUid": 23, "srcRect": [0,0,32,32] },
@@ -658,7 +658,7 @@
 							"fieldInstances": []
 						},
 						{
-							"__identifier": "Grill",
+							"__identifier": "Girl",
 							"__grid": [6,1],
 							"__pivot": [0,0],
 							"__tile": { "tilesetUid": 23, "srcRect": [32,0,32,32] },

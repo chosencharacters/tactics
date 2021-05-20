@@ -38,7 +38,7 @@ class Cursor extends FlxSpriteExt
 		position_text.text = '${x}, ${y}\n${tile_position.x}, ${tile_position.y}\n'
 			+ (tile_position.y * PlayState.self.current_state.grid.width_in_tiles + tile_position.x);
 
-		if (PlayState.self.selected_unit != null)
+		if (PlayState.self.selected_unit != null && !PlayState.self.current_state.realizing_state)
 		{
 			highlight_path();
 		}
@@ -51,7 +51,7 @@ class Cursor extends FlxSpriteExt
 		var grid:GridArray = PlayState.self.current_state.grid;
 		var unit:UnitData = PlayState.self.selected_unit.get_unit_data();
 
-		var source_node:SearchNode = grid.getNode(unit.x, unit.y);
+		var source_node:SearchNode = grid.get_unit_data_node(unit);
 
 		var movement_options:Array<SearchNode> = grid.movement_options.get(PlayState.self.selected_unit.uid);
 		var attack_options:Array<SearchNode> = grid.attack_options.get(PlayState.self.selected_unit.uid);
@@ -61,12 +61,14 @@ class Cursor extends FlxSpriteExt
 		if (movement_options != null)
 			for (target_node in movement_options)
 				if (CURSOR_POSITION.x == target_node.x && CURSOR_POSITION.y == target_node.y)
-					PlayState.self.select_squares.path_highlight.update_path(source_node, target_node, false);
+					PlayState.self.select_squares.path_highlight.update_path(target_node.path.copy()
+						.concat([target_node.y * grid.width_in_tiles + target_node.x]), false);
 
 		if (attack_options != null)
 			for (target_node in attack_options)
 				if (CURSOR_POSITION.x == target_node.x && CURSOR_POSITION.y == target_node.y)
-					PlayState.self.select_squares.path_highlight.update_path(source_node, target_node, true);
+					PlayState.self.select_squares.path_highlight.update_path(target_node.path.copy()
+						.concat([target_node.y * grid.width_in_tiles + target_node.x]), true);
 	}
 
 	function select()
@@ -86,7 +88,7 @@ class Cursor extends FlxSpriteExt
 			{
 				var TEAM_OK:Bool = unit.team == PlayState.self.current_state.active_team;
 				PlayState.self.selected_unit = unit;
-				if (TEAM_OK && unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
+				if (TEAM_OK && unit.tile_position.x == tile_x && unit.tile_position.y == tile_y && !unit.exhausted)
 				{
 					unit.select();
 					return;

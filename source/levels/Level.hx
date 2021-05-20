@@ -41,10 +41,10 @@ class Level extends LDTKLevel
 	{
 		var data = get_level_by_name(project, level_name);
 
-		for (entity in data.l_Entities.all_Player.iterator())
-			new Player(entity.cx, entity.cy);
-		for (entity in data.l_Entities.all_Grill.iterator())
-			new Grill(entity.cx, entity.cy);
+		for (entity in data.l_Entities.all_Boy.iterator())
+			new Boy(entity.cx, entity.cy);
+		for (entity in data.l_Entities.all_Girl.iterator())
+			new Girl(entity.cx, entity.cy);
 		for (entity in data.l_Entities.all_Slime.iterator())
 			new Slime(entity.cx, entity.cy);
 

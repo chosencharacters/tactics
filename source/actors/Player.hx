@@ -1,5 +1,6 @@
 package actors;
 
+import actors.Weapon.WeaponAttackStat;
 import actors.Weapon.WeaponAttackType;
 
 class Player extends Unit
@@ -18,10 +19,12 @@ class Player extends Unit
 		weapons = [
 			{
 				w_id: Utils.get_unused_id(),
-				name: "gun",
+				name: "sword",
 				attack_type: WeaponAttackType.RANGED,
+				primary_stat: WeaponAttackStat.STR,
 				str: 1,
 				range: 1,
+				might: 1,
 				blindspot: 0,
 				knockback: 3
 			}

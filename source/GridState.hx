@@ -1,4 +1,5 @@
 import Utils.Cloner;
+import actors.Weapon.WeaponAttackStat;
 import actors.Weapon.WeaponAttackType;
 import actors.Weapon.WeaponDef;
 
@@ -35,6 +36,9 @@ typedef UnitData =
 	team:Int,
 	max_health:Int,
 	speed:Int,
+	str:Int,
+	dex:Int,
+	int:Int,
 	movement_left:Int,
 	health:Float,
 	weapons:Array<WeaponDef>,
@@ -201,7 +205,7 @@ class GridState
 	{
 		source_unit = find_unit_data_in_units(source_unit);
 		attack_unit = find_unit_data_in_units(attack_unit);
-		attack_unit.health -= weapon.str;
+		attack_unit.health -= calculate_attack(source_unit, attack_unit, weapon);
 
 		var HORZ:Bool = source_unit.x < attack_unit.x || source_unit.x > attack_unit.x;
 		var VERT:Bool = source_unit.y < attack_unit.y || source_unit.y > attack_unit.y;
@@ -224,6 +228,20 @@ class GridState
 		}
 
 		write_state_to_game();
+	}
+
+	function calculate_attack(source_unit:UnitData, attack_unit:UnitData, weapon:WeaponDef):Int
+	{
+		var tot_damage:Int = 0;
+		switch (weapon.primary_stat)
+		{
+			case WeaponAttackStat.STR:
+				return (source_unit.str + weapon.might) - attack_unit.str;
+			case WeaponAttackStat.DEX:
+				return (source_unit.dex + weapon.might) - attack_unit.dex;
+			case WeaponAttackStat.INT:
+				return (source_unit.int + weapon.might) - attack_unit.int;
+		}
 	}
 
 	public function find_unit_data_in_units(unit:UnitData):UnitData

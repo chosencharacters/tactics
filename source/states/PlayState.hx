@@ -90,14 +90,4 @@ class PlayState extends BaseState
 			return a_index > b_index ? 1 : -1;
 		});
 	}
-	/*
-		function quicksort_units(A:Array<Unit>, lo:Int, hi:Int)
-		{
-			if (lo < hi)
-			{
-				var p:Array<Unit> = partition();
-				quicksort_units
-			}
-		}
-	 */
 }

@@ -17,6 +17,10 @@ class Unit extends Actor
 
 	var name:String = "";
 
+	var str:Int = 1;
+	var dex:Int = 1;
+	var int:Int = 1;
+
 	var movement_path:Array<FlxPoint> = new Array<FlxPoint>();
 
 	public var uid:Int = 0;
@@ -221,6 +225,9 @@ class Unit extends Actor
 			team: team,
 			max_health: max_health,
 			speed: speed,
+			str: str,
+			dex: dex,
+			int: int,
 			movement_left: movement_left,
 			uid: uid,
 			weapons: weapons,

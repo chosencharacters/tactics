@@ -5,8 +5,8 @@ typedef WeaponDef =
 	w_id:Int,
 	name:String,
 	attack_type:WeaponAttackType,
-	str:Int,
-	range:Int,
+	primary_stat:WeaponAttackStat,
+	might:Int,
 	blindspot:Int,
 	knockback:Int
 }
@@ -19,4 +19,17 @@ abstract WeaponAttackType(Int)
 
 	/**Can't move and attack with this weapon*/
 	var ARTILLERY = 1;
+}
+
+@:enum
+abstract WeaponAttackStat(String)
+{
+	/**This is an int based weapon i.e. magic,*/
+	var INT = "Intelligence";
+
+	/**This is a strength based weapon i.e. sword, axe*/
+	var STR = "Strength";
+
+	/**This is a dex based weapon i.e. dagger, arrows*/
+	var DEX = "Dexterity";
 }

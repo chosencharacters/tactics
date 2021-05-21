@@ -77,7 +77,7 @@ class Cursor extends FlxSpriteExt
 		var tile_y:Int = Math.floor((y - PlayState.self.level.y) / PlayState.self.level.tile_size);
 
 		PlayState.self.unit_viewer.clear_data();
-		
+
 		if (Ctrl.cursor_select)
 		{
 			PlayState.self.selected_unit = null;
@@ -88,10 +88,11 @@ class Cursor extends FlxSpriteExt
 			for (unit in PlayState.self.units)
 			{
 				var TEAM_OK:Bool = unit.team == PlayState.self.current_state.active_team;
-				PlayState.self.selected_unit = unit;
-				if (TEAM_OK && unit.tile_position.x == tile_x && unit.tile_position.y == tile_y && !unit.exhausted)
+				if (unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
 				{
-					unit.select();
+					PlayState.self.selected_unit = unit;
+					if (TEAM_OK && !unit.exhausted)
+						unit.select();
 					return;
 				}
 			}

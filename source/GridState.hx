@@ -236,7 +236,9 @@ class GridState
 	{
 		source_unit = find_unit_data_in_units(source_unit);
 		attack_unit = find_unit_data_in_units(attack_unit);
-		attack_unit.health -= calculate_attack(source_unit, attack_unit, weapon);
+
+		var damage:Int = calculate_attack(source_unit, attack_unit, weapon);
+		attack_unit.health -= damage;
 
 		var HORZ:Bool = source_unit.x < attack_unit.x || source_unit.x > attack_unit.x;
 		var VERT:Bool = source_unit.y < attack_unit.y || source_unit.y > attack_unit.y;

@@ -127,7 +127,7 @@ class Unit extends Actor
 
 	public function realize_attack(state:GridState, target_unit:UnitData, weapon:WeaponDef)
 	{
-		state.attack(state.grid.units.get(uid), target_unit, weapon);
+		state.attack(state.grid.units.get(uid), state.grid.units.get(target_unit.uid), weapon);
 	}
 
 	function snap_to_grid()
@@ -257,6 +257,7 @@ class Unit extends Actor
 
 	public function write_from_unit_data(data:UnitData)
 	{
+		trace(data.x, data.y, data.health);
 		tile_position.x = data.x;
 		tile_position.y = data.y;
 		health = data.health;

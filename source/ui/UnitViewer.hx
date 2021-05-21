@@ -76,6 +76,8 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 		hp_bar.setRange(0, unit.max_health);
 		hp_bar.value = unit.health;
 
+		trace(unit.x, unit.y, unit.health, unit.max_health);
+
 		hp_text.text = unit.health + "/" + unit.max_health;
 		name_text.text = unit.name;
 

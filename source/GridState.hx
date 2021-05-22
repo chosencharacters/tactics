@@ -51,6 +51,7 @@ typedef UnitData =
 
 typedef AttackData =
 {
+	artillery:Bool,
 	attack_range:Int,
 	attacking_unit:UnitData,
 	defending_unit:UnitData,
@@ -205,13 +206,14 @@ class GridState
 		return source_unit;
 	}
 
-	public function add_attack_turn(source_unit:UnitData, defending_unit:UnitData, weapon:WeaponDef, realize_state_set:Bool = true)
+	public function add_attack_turn(source_unit:UnitData, defending_unit:UnitData, weapon:WeaponDef, realize_state_set:Bool = true, node:SearchNode)
 	{
 		var turn:GridStateTurn = empty_turn();
 		turn.source_unit = source_unit;
 		turn.defending_unit = defending_unit;
 		turn.turn_type = "attack";
 		turn.weapon = weapon;
+		turn.attack_range = node.attack_range;
 
 		turns.push(turn);
 
@@ -284,6 +286,7 @@ class GridState
 	function calculate_attack(turn:GridStateTurn):AttackData
 	{
 		var attack:AttackData = {
+			artillery: false,
 			attack_range: turn.attack_range,
 			attacking_unit: turn.source_unit,
 			defending_unit: turn.defending_unit,
@@ -292,6 +295,8 @@ class GridState
 			attacking_damage: 0,
 			defending_damage: 0
 		};
+
+		attack.artillery = attack.attack_weapon.attack_type == WeaponAttackType.ARTILLERY;
 
 		attack.attacking_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
 		if (turn.defending_unit.health > attack.attacking_damage)

@@ -25,10 +25,10 @@ class Slime extends Unit
 				attack_type: WeaponAttackType.RANGED,
 				primary_stat: WeaponAttackStat.STR,
 				can_retaliate: true,
-				range: 1,
+				range: 3,
 				might: 10,
 				retaliate_might: 5,
-				blindspot: 0,
+				blindspot: 2,
 				knockback: 3
 			}
 		];

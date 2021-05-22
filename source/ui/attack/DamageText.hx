@@ -6,7 +6,6 @@ class DamageText extends FlxText
 {
 	public function new(?X:Float, ?Y:Float, Damage:Float = 0)
 	{
-		trace(Damage);
 		super(X, Y, 100, Math.floor(Damage) + "");
 
 		Utils.formatText(this, "center", FlxColor.WHITE, true, "assets/fonts/6px-Normal.ttf", 16);

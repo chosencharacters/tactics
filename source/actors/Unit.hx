@@ -227,10 +227,12 @@ class Unit extends Actor
 			{
 				var enemy_unit:UnitData = pos.unit;
 				var path_nodes:Array<SearchNode> = PlayState.self.current_state.grid.get_path_as_nodes(pos.path);
+				if (path_nodes.length == 0)
+					path_nodes = [pos];
 
 				if (path_nodes.length > 1)
 					PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
-				PlayState.self.current_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
+				PlayState.self.current_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true, path_nodes[path_nodes.length - 1]);
 
 				SELECTED = false;
 				Ctrl.cursor_select = false;

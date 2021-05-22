@@ -9,7 +9,7 @@ class AttackUnit extends FlxSpriteExt
 	public var ATTACK_DISTANCE:Int = 64; // pixels AWAY from the enemy
 	public final MOVE_SPEED:Int = 400;
 
-	/**Is this the attacking unit?*/
+	/**Is this the attack unit?*/
 	var ATTACKER:Bool = false;
 
 	/**Is the attack finished? Both these need to be true.*/
@@ -32,15 +32,13 @@ class AttackUnit extends FlxSpriteExt
 
 		var state:GridState = PlayState.self.current_state;
 
-		var image_name:String = "";
+		var unit:Unit = null;
 		if (is_attacker)
-			image_name = state.unit_from_unit_data(attack_data.attacking_unit).loaded_image;
+			unit = state.unit_from_unit_data(attack_data.attacking_unit);
 		else
-			image_name = state.unit_from_unit_data(attack_data.defending_unit).loaded_image;
+			unit = state.unit_from_unit_data(attack_data.defending_unit);
 
-		trace(image_name);
-
-		loadAllFromAnimationSet(image_name);
+		loadAllFromAnimationSet(unit.loaded_image);
 
 		if (!is_attacker)
 		{
@@ -49,6 +47,8 @@ class AttackUnit extends FlxSpriteExt
 		}
 
 		ATTACKER = is_attacker;
+
+		ATTACK_DISTANCE = 64 * (attack_data.attack_range + 1);
 
 		y += -height;
 	}
@@ -60,7 +60,7 @@ class AttackUnit extends FlxSpriteExt
 		{
 			case "moving":
 				run_forward();
-			case "attacking":
+			case "attack":
 				attack();
 			case "damage":
 				receive_damage();
@@ -110,17 +110,24 @@ class AttackUnit extends FlxSpriteExt
 	 */
 	function run_forward()
 	{
+		if (attack_data.attack_range >= 4 || attack_data.artillery)
+		{
+			sstateAnim("attack");
+			return;
+		}
+
 		ttick();
 		if (tick < 5)
 			return;
 		anim("move");
+
 		velocity.x = MOVE_SPEED;
 		if (x + width > target.x - ATTACK_DISTANCE)
 		{
 			x = target.x - ATTACK_DISTANCE - width;
 			velocity.x = 0;
 			anim("idle");
-			sstate("attacking");
+			sstate("attack");
 		}
 	}
 
@@ -134,7 +141,6 @@ class AttackUnit extends FlxSpriteExt
 			color = FlxColor.RED;
 			var damage:Float = !ATTACKER ? attack_data.attacking_damage : attack_data.defending_damage;
 			FlxG.state.subState.add(new DamageText(getGraphicMidpoint().x, getGraphicMidpoint().y, damage));
-			trace(attack_data.attacking_damage, attack_data.defending_damage);
 			Utils.shake("light");
 		}
 
@@ -150,7 +156,7 @@ class AttackUnit extends FlxSpriteExt
 			if (!ATTACKER && attack_data.defending_damage > 0)
 			{
 				if (tick > 30)
-					sstate("attacking");
+					sstate("attack");
 			}
 			else
 			{

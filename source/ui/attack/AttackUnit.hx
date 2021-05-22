@@ -1,6 +1,7 @@
 package ui.attack;
 
 import GridState.AttackData;
+import GridState.GridArray;
 import actors.Weapon.WeaponDef;
 
 class AttackUnit extends FlxSpriteExt
@@ -23,13 +24,23 @@ class AttackUnit extends FlxSpriteExt
 
 	var attack_data:AttackData;
 
-	public function new(Data:AttackData, ?X:Float = 0, ?Y:Float = 0, type:String, is_attacker:Bool = true)
+	public function new(Data:AttackData, ?X:Float = 0, ?Y:Float = 0, is_attacker:Bool = true)
 	{
 		super(X, Y);
 
 		attack_data = Data;
 
-		loadAllFromAnimationSet(type);
+		var state:GridState = PlayState.self.current_state;
+
+		var image_name:String = "";
+		if (is_attacker)
+			image_name = state.unit_from_unit_data(attack_data.attacking_unit).loaded_image;
+		else
+			image_name = state.unit_from_unit_data(attack_data.defending_unit).loaded_image;
+
+		trace(image_name);
+
+		loadAllFromAnimationSet(image_name);
 
 		if (!is_attacker)
 		{
@@ -44,6 +55,7 @@ class AttackUnit extends FlxSpriteExt
 
 	override function update(elapsed:Float)
 	{
+		finished = state == "none";
 		switch (state)
 		{
 			case "moving":
@@ -52,8 +64,6 @@ class AttackUnit extends FlxSpriteExt
 				attack();
 			case "damage":
 				receive_damage();
-			case "none":
-				finished = true;
 		}
 		super.update(elapsed);
 	}
@@ -80,6 +90,8 @@ class AttackUnit extends FlxSpriteExt
 	 */
 	function attack()
 	{
+		if (tick == 0)
+			target.sstate("damage");
 		ttick();
 		if (tick < 5)
 			return;
@@ -109,7 +121,6 @@ class AttackUnit extends FlxSpriteExt
 			velocity.x = 0;
 			anim("idle");
 			sstate("attacking");
-			target.sstate("damage");
 		}
 	}
 
@@ -123,6 +134,7 @@ class AttackUnit extends FlxSpriteExt
 			color = FlxColor.RED;
 			var damage:Float = !ATTACKER ? attack_data.attacking_damage : attack_data.defending_damage;
 			FlxG.state.subState.add(new DamageText(getGraphicMidpoint().x, getGraphicMidpoint().y, damage));
+			trace(attack_data.attacking_damage, attack_data.defending_damage);
 			Utils.shake("light");
 		}
 
@@ -134,7 +146,16 @@ class AttackUnit extends FlxSpriteExt
 		if (tick > 15)
 		{
 			offset.set(0, 0);
-			sstate("none");
+
+			if (!ATTACKER && attack_data.defending_damage > 0)
+			{
+				if (tick > 30)
+					sstate("attacking");
+			}
+			else
+			{
+				sstate("none");
+			}
 		}
 	}
 }

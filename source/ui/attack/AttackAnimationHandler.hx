@@ -19,8 +19,8 @@ class AttackAnimationHandler extends FlxTypedSpriteGroup<FlxSprite>
 	{
 		super();
 
-		unit1 = new AttackUnit(attack_data, attack_background.x, 220 + 32, "boy", true);
-		unit2 = new AttackUnit(attack_data, attack_background.x + attack_background.width, 220 + 32, "slime", false);
+		unit1 = new AttackUnit(attack_data, attack_background.x, 220 + 32, true);
+		unit2 = new AttackUnit(attack_data, attack_background.x + attack_background.width, 220 + 32, false);
 
 		unit1.set_target(unit2);
 		unit2.set_target(unit1);
@@ -35,7 +35,7 @@ class AttackAnimationHandler extends FlxTypedSpriteGroup<FlxSprite>
 		tick++;
 		if (tick == 15)
 			unit1.start_attack();
-		if (unit1.finished)
+		if (unit1.finished && unit2.finished)
 			finished = true;
 		super.update(elapsed);
 	}

@@ -18,7 +18,7 @@
 	<animSet image = "slime" path = "assets\images\chars">
 		<anim name = "idle" fps = "8">0t3</anim>
 		<anim name = "move">0t3</anim>
-		<anim name = "attack" fps = "20" looping = "false">0t3</anim>
+		<anim name = "attack" fps = "20" looping = "false">4t7,2t3</anim>
 		<anim name = "hit">0</anim>
 	</animSet>
 </root>

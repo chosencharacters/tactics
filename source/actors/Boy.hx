@@ -12,7 +12,7 @@ class Boy extends Unit
 		team = 1;
 		speed = 3;
 		health = 25;
-		str = 10;
+		str = 5;
 
 		name = "Rodney";
 
@@ -22,10 +22,10 @@ class Boy extends Unit
 			{
 				w_id: Utils.get_unused_id(),
 				name: "sword",
-				attack_type: WeaponAttackType.ARTILLERY,
+				attack_type: WeaponAttackType.RANGED,
 				primary_stat: WeaponAttackStat.STR,
 				can_retaliate: true,
-				range: 5,
+				range: 1,
 				might: 15,
 				retaliate_might: 7,
 				blindspot: 0,

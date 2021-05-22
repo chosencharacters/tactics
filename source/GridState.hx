@@ -294,6 +294,8 @@ class GridState
 		};
 
 		attack.attacking_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
+		if (turn.defending_unit.health > attack.attacking_damage)
+			attack.defending_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
 
 		for (weapon in attack.defending_unit.weapons)
 			if (weapon.can_retaliate)

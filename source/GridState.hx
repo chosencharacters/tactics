@@ -299,13 +299,20 @@ class GridState
 		attack.artillery = attack.attack_weapon.attack_type == WeaponAttackType.ARTILLERY;
 
 		attack.attacking_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
-		if (turn.defending_unit.health > attack.attacking_damage)
-			attack.defending_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
 
+		var CAN_RETALIATE:Bool = false;
 		for (weapon in attack.defending_unit.weapons)
 			if (weapon.can_retaliate)
-				if (weapon.range >= attack.attack_weapon.range)
-					return attack;
+			{
+				if (weapon.range >= attack.attack_range && attack.attack_range > weapon.blindspot)
+					CAN_RETALIATE = true;
+			}
+
+		CAN_RETALIATE = turn.defending_unit.health > attack.attacking_damage && CAN_RETALIATE;
+
+		if (CAN_RETALIATE)
+			attack.defending_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
+
 		return attack;
 	}
 
@@ -571,32 +578,35 @@ class GridArray
 				for (col in -weapon.range...weapon.range + 1)
 					for (row in -weapon.range...weapon.range + 1)
 					{
-						var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
-						if (enemy_unit != null && enemy_unit.team != unit.team)
+						if (row > weapon.blindspot || row < -weapon.blindspot || col > weapon.blindspot || col < -weapon.blindspot)
 						{
-							var attack_node:SearchNode = getNode(node.x + col, node.y + row);
-
-							// Just make sure that this doesn't already exist with a better manhatten score before adding it
-							var best_score:Float = 999;
-							var best_path_length:Int = 999;
-
-							if (attack_options.length > 0)
-								for (node in attack_options)
-									if (node.manhatten_score < best_score
-										&& node.path.length <= best_path_length
-										&& node.uid == attack_node.uid)
-									{
-										best_score = node.manhatten_score;
-										best_path_length = node.path.length;
-									}
-
-							if (best_score == 999)
+							var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
+							if (enemy_unit != null && enemy_unit.team != unit.team)
 							{
-								attack_node.weapon = weapon;
-								attack_node.attacking_from = node;
-								attack_node.attack_range = Math.floor(Math.abs(col) > Math.abs(row) ? Math.abs(col) : Math.abs(row));
-								attack_node.path = node.path.copy().concat([node.uid]);
-								attack_options.push(attack_node);
+								var attack_node:SearchNode = getNode(node.x + col, node.y + row);
+
+								// Just make sure that this doesn't already exist with a better manhatten score before adding it
+								var best_score:Float = 999;
+								var best_path_length:Int = 999;
+
+								if (attack_options.length > 0)
+									for (node in attack_options)
+										if (node.manhatten_score < best_score
+											&& node.path.length <= best_path_length
+											&& node.uid == attack_node.uid)
+										{
+											best_score = node.manhatten_score;
+											best_path_length = node.path.length;
+										}
+
+								if (best_score == 999)
+								{
+									attack_node.weapon = weapon;
+									attack_node.attacking_from = node;
+									attack_node.attack_range = Math.floor(Math.abs(col) > Math.abs(row) ? Math.abs(col) : Math.abs(row));
+									attack_node.path = node.path.copy().concat([node.uid]);
+									attack_options.push(attack_node);
+								}
 							}
 						}
 					}

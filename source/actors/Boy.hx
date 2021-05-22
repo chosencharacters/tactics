@@ -25,7 +25,7 @@ class Boy extends Unit
 				attack_type: WeaponAttackType.RANGED,
 				primary_stat: WeaponAttackStat.STR,
 				can_retaliate: true,
-				range: 10,
+				range: 1,
 				might: 15,
 				retaliate_might: 7,
 				blindspot: 0,

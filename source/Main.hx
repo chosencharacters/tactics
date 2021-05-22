@@ -11,6 +11,7 @@ class Main extends Sprite
 
 	public static var REVERSE_MENU_CONTROLS:Bool = false;
 	public static var DISABLE_SCREENSHAKE:Bool = false;
+	public static var QUICK_ATTACK_MODE:Bool = false;
 
 	public static var DEBUG_PATH:Bool = false;
 

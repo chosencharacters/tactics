@@ -1,9 +1,11 @@
 package actors;
 
+import GridState.AttackData;
 import actors.Weapon.WeaponDef;
 import flixel.text.FlxText;
 import flixel.tile.FlxBaseTilemap.FlxTilemapDiagonalPolicy;
 import flixel.util.FlxPath;
+import ui.attack.AttackAnimationSubstate;
 
 class Unit extends Actor
 {
@@ -78,6 +80,8 @@ class Unit extends Actor
 
 			move_tile_position = movement_path.shift();
 			REALIZING = true;
+
+			PlayState.self.unit_viewer.path_movement_left_mod = 0;
 		}
 
 		if (!REALIZING)
@@ -114,6 +118,7 @@ class Unit extends Actor
 			{
 				tile_position.set(move_tile_position.x / level.tile_size, move_tile_position.y / level.tile_size);
 				movement_path_nodes.shift();
+				PlayState.self.unit_viewer.path_movement_left_mod++;
 
 				if (movement_path.length <= 0)
 					REALIZING = false;
@@ -125,9 +130,10 @@ class Unit extends Actor
 		}
 	}
 
-	public function realize_attack(state:GridState, target_unit:UnitData, weapon:WeaponDef)
+	public function realize_attack(state:GridState, turn:GridStateTurn)
 	{
-		state.attack(state.grid.units.get(uid), state.grid.units.get(target_unit.uid), weapon);
+		var attack_data:AttackData = state.attack(turn);
+		FlxG.state.openSubState(new AttackAnimationSubstate(attack_data));
 	}
 
 	function snap_to_grid()
@@ -222,7 +228,8 @@ class Unit extends Actor
 				var enemy_unit:UnitData = pos.unit;
 				var path_nodes:Array<SearchNode> = PlayState.self.current_state.grid.get_path_as_nodes(pos.path);
 
-				PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
+				if (path_nodes.length > 1)
+					PlayState.self.current_state.add_move_turn(state.grid.units.get(uid), path_nodes[path_nodes.length - 1], false);
 				PlayState.self.current_state.add_attack_turn(state.grid.units.get(uid), enemy_unit, pos.weapon, true);
 
 				SELECTED = false;
@@ -257,7 +264,6 @@ class Unit extends Actor
 
 	public function write_from_unit_data(data:UnitData)
 	{
-		trace(data.x, data.y, data.health);
 		tile_position.x = data.x;
 		tile_position.y = data.y;
 		health = data.health;

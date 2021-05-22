@@ -2,12 +2,16 @@ package actors;
 
 typedef WeaponDef =
 {
+	/**weapon id*/
 	w_id:Int,
+
 	name:String,
 	attack_type:WeaponAttackType,
 	primary_stat:WeaponAttackStat,
+	can_retaliate:Bool,
 	range:Int,
 	might:Int,
+	retaliate_might:Int,
 	blindspot:Int,
 	knockback:Int
 }

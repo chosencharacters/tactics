@@ -39,7 +39,7 @@ class FlxSpriteExt extends FlxSprite
 	{
 		isOnNewFrame = animation == null ? false : prevFrame != animation.frameIndex;
 		prevFrame = animation == null ? 0 : animation.frameIndex;
-		
+
 		super.update(elapsed);
 	}
 

@@ -21,6 +21,9 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 	var unit_copy_base_dimensions:FlxPoint = new FlxPoint(44, 44);
 	var unit_copy_base_color:FlxColor = 0xff585651;
 
+	/**Updates movement based on path*/
+	public var path_movement_left_mod:Int = 0;
+
 	public function new()
 	{
 		super();
@@ -70,13 +73,11 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 
 	function set_data(unit:UnitData)
 	{
-		moves_left.animation.frameIndex = unit.movement_left;
+		moves_left.animation.frameIndex = unit.movement_left - path_movement_left_mod;
 		moves_max.animation.frameIndex = unit.speed;
 
 		hp_bar.setRange(0, unit.max_health);
 		hp_bar.value = unit.health;
-
-		trace(unit.x, unit.y, unit.health, unit.max_health);
 
 		hp_text.text = unit.health + "/" + unit.max_health;
 		name_text.text = unit.name;
@@ -97,6 +98,8 @@ class UnitViewer extends FlxTypedSpriteGroup<FlxSprite>
 
 		hp_bar.updateBar();
 		clear_unit_copy();
+
+		path_movement_left_mod = 0;
 	}
 
 	function clear_unit_copy()

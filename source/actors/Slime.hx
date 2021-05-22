@@ -12,11 +12,7 @@ class Slime extends Unit
 		speed = 3;
 		max_health = 25;
 
-		trace("NEW SLIME");
-
 		name = "slime";
-
-		trace(tile_position.x, tile_position.y);
 
 		loadAllFromAnimationSet("slime");
 

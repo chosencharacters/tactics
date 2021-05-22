@@ -7,7 +7,8 @@ typedef GridStateTurn =
 {
 	turn_type:String,
 	source_unit:UnitData,
-	target_unit:UnitData,
+	defending_unit:UnitData,
+	attack_range:Int,
 	weapon:WeaponDef,
 	path:Array<Int>
 }
@@ -23,7 +24,9 @@ typedef SearchNode =
 	distance:Int,
 	unit:UnitData,
 	weapon:WeaponDef,
-	attacking_from:SearchNode
+	attacking_from:SearchNode,
+	attack_range:Int,
+	manhatten_score:Float
 }
 
 typedef UnitData =
@@ -44,6 +47,17 @@ typedef UnitData =
 	weapons:Array<WeaponDef>,
 	moved_already:Bool,
 	exhausted:Bool
+}
+
+typedef AttackData =
+{
+	attack_range:Int,
+	attacking_unit:UnitData,
+	defending_unit:UnitData,
+	attack_weapon:WeaponDef,
+	defending_weapon:WeaponDef,
+	attacking_damage:Float,
+	defending_damage:Float
 }
 
 class GridState
@@ -109,7 +123,7 @@ class GridState
 					{
 						trace("MOVE END");
 
-						var movement_left:Int = turn.source_unit.movement_left - turn.path.length;
+						var movement_left:Int = turn.source_unit.movement_left - (turn.path.length - 1);
 
 						regen_grid();
 
@@ -120,7 +134,7 @@ class GridState
 						turn_index++;
 					}
 				case "attack":
-					source_unit.realize_attack(this, turn.target_unit, turn.weapon);
+					source_unit.realize_attack(this, turn);
 					if (!source_unit.REALIZING)
 					{
 						trace("ATTACK END");
@@ -139,7 +153,6 @@ class GridState
 		}
 		if (turn_index == turns.length || turns.length == 0)
 		{
-			trace("TURN SET END");
 			turn_index = 0;
 			realizing_state = false;
 			write_state_to_game();
@@ -192,11 +205,11 @@ class GridState
 		return source_unit;
 	}
 
-	public function add_attack_turn(source_unit:UnitData, target_unit:UnitData, weapon:WeaponDef, realize_state_set:Bool = true)
+	public function add_attack_turn(source_unit:UnitData, defending_unit:UnitData, weapon:WeaponDef, realize_state_set:Bool = true)
 	{
 		var turn:GridStateTurn = empty_turn();
 		turn.source_unit = source_unit;
-		turn.target_unit = target_unit;
+		turn.defending_unit = defending_unit;
 		turn.turn_type = "attack";
 		turn.weapon = weapon;
 
@@ -210,7 +223,8 @@ class GridState
 		return {
 			turn_type: "",
 			source_unit: null,
-			target_unit: null,
+			defending_unit: null,
+			attack_range: 0,
 			weapon: null,
 			path: []
 		};
@@ -232,26 +246,28 @@ class GridState
 		throw "invalid unit with id " + data.uid;
 	}
 
-	public function attack(source_unit:UnitData, attack_unit:UnitData, weapon:WeaponDef)
+	public function attack(turn:GridStateTurn):AttackData
 	{
-		source_unit = find_unit_data_in_units(source_unit);
-		attack_unit = find_unit_data_in_units(attack_unit);
+		turn.source_unit = find_unit_data_in_units(turn.source_unit);
+		turn.defending_unit = find_unit_data_in_units(turn.defending_unit);
 
-		var damage:Int = calculate_attack(source_unit, attack_unit, weapon);
-		attack_unit.health -= damage;
+		var attack_data:AttackData = calculate_attack(turn);
 
-		var HORZ:Bool = source_unit.x < attack_unit.x || source_unit.x > attack_unit.x;
-		var VERT:Bool = source_unit.y < attack_unit.y || source_unit.y > attack_unit.y;
+		turn.defending_unit.health -= attack_data.attacking_damage;
+		turn.source_unit.health -= attack_data.defending_damage;
+
+		var HORZ:Bool = turn.source_unit.x < turn.defending_unit.x || turn.source_unit.x > turn.defending_unit.x;
+		var VERT:Bool = turn.source_unit.y < turn.defending_unit.y || turn.source_unit.y > turn.defending_unit.y;
 
 		var kb_x:Int = 0;
 		var kb_y:Int = 0;
 
 		if (HORZ)
-			kb_x = source_unit.x < attack_unit.x ? -weapon.knockback : weapon.knockback;
+			kb_x = turn.source_unit.x < turn.defending_unit.x ? -turn.weapon.knockback : turn.weapon.knockback;
 		if (VERT)
-			kb_y = source_unit.y < attack_unit.y ? -weapon.knockback : weapon.knockback;
+			kb_y = turn.source_unit.y < turn.defending_unit.y ? -turn.weapon.knockback : turn.weapon.knockback;
 
-		var attack_node:SearchNode = grid.getNode(attack_unit.x, attack_unit.y);
+		var attack_node:SearchNode = grid.getNode(turn.defending_unit.x, turn.defending_unit.y);
 		var kb_line:Array<SearchNode> = grid.draw_line_with_collision(attack_node, 3, kb_x, kb_y);
 
 		if (kb_line.length > 0)
@@ -261,20 +277,44 @@ class GridState
 		}
 
 		write_state_to_game();
+
+		return attack_data;
 	}
 
-	function calculate_attack(source_unit:UnitData, attack_unit:UnitData, weapon:WeaponDef):Int
+	function calculate_attack(turn:GridStateTurn):AttackData
+	{
+		var attack:AttackData = {
+			attack_range: turn.attack_range,
+			attacking_unit: turn.source_unit,
+			defending_unit: turn.defending_unit,
+			attack_weapon: turn.weapon,
+			defending_weapon: null,
+			attacking_damage: 0,
+			defending_damage: 0
+		};
+
+		attack.attacking_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
+
+		for (weapon in attack.defending_unit.weapons)
+			if (weapon.can_retaliate)
+				if (weapon.range >= attack.attack_weapon.range)
+					return attack;
+		return attack;
+	}
+
+	function calculate_single_attack(source_unit:UnitData, defending_unit:UnitData, might:Int, weapon:WeaponDef):Int
 	{
 		var tot_damage:Int = 0;
 		switch (weapon.primary_stat)
 		{
 			case WeaponAttackStat.STR:
-				return (source_unit.str + weapon.might) - attack_unit.str;
+				tot_damage = (source_unit.str + might) - defending_unit.str;
 			case WeaponAttackStat.DEX:
-				return (source_unit.dex + weapon.might) - attack_unit.dex;
+				tot_damage = (source_unit.dex + might) - defending_unit.dex;
 			case WeaponAttackStat.INT:
-				return (source_unit.int + weapon.might) - attack_unit.int;
+				tot_damage = (source_unit.int + might) - defending_unit.int;
 		}
+		return tot_damage;
 	}
 
 	public function find_unit_data_in_units(unit:UnitData):UnitData
@@ -302,18 +342,32 @@ class GridState
 	}
 }
 
+/**
+ * A grid array that represents the physical state of the game
+ */
 class GridArray
 {
 	public var array:Array<Int> = [];
+
+	/**All the units represented as UnitData*/
 	public var units:Map<Int, UnitData> = [];
+
+	/**The int array represented as SearchNodes, this will be filled up entirely with tons of data when BFS is run*/
 	public var nodes:Array<SearchNode> = [];
 
+	/**Map width*/
 	public var width_in_tiles:Int = 0;
+
+	/**Map height*/
 	public var height_in_tiles:Int = 0;
 
+	/**Tiles to collide, will be depricated in favor of terrain types... eventually*/
 	public var collisions:Array<Int> = [1];
 
+	/**valid movement options for the last unit that had bfs run on it*/
 	public var movement_options:Map<Int, Array<SearchNode>> = new Map<Int, Array<SearchNode>>();
+
+	/**valid attack options for the last unit that had bfs run on it*/
 	public var attack_options:Map<Int, Array<SearchNode>> = new Map<Int, Array<SearchNode>>();
 
 	public function new(ArrayCopy:Array<Int>, units_array:Array<UnitData>)
@@ -329,6 +383,7 @@ class GridArray
 		{
 			nodes.push(new_node(i % width_in_tiles, Math.floor(i / width_in_tiles), array[i]));
 			nodes[i].unit = getTileUnit(nodes[i].x, nodes[i].y);
+			nodes[i].manhatten_score = 0;
 		}
 	}
 
@@ -405,6 +460,8 @@ class GridArray
 			unit: unit,
 			weapon: weapon,
 			attacking_from: null,
+			attack_range: 0,
+			manhatten_score: 0
 		};
 	}
 
@@ -424,6 +481,8 @@ class GridArray
 		movement_options.set(unit.uid, []);
 		attack_options.set(unit.uid, []);
 
+		calculate_immediate_attack_options(attack_options.get(unit.uid), unit, start_node);
+
 		for (n in nodes)
 		{
 			n.visited = false;
@@ -442,15 +501,13 @@ class GridArray
 				{
 					neighbor.path = current.path.concat([current.uid]);
 					neighbor.distance = neighbor.path.length;
+					neighbor.manhatten_score = manhatten_heuristic(start_node, neighbor);
 
 					if (neighbor.distance < unit.movement_left)
 					{
-						var cur_atk_opts:Array<SearchNode> = attack_options.get(unit.uid);
-						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(unit, neighbor);
+						var new_atk_opts:Array<SearchNode> = calculate_immediate_attack_options(attack_options.get(unit.uid), unit, neighbor);
 
-						cur_atk_opts = combine_node_arrays(cur_atk_opts, new_atk_opts);
-
-						attack_options.set(unit.uid, cur_atk_opts);
+						attack_options.set(unit.uid, new_atk_opts);
 					}
 
 					set_add(open_set, neighbor);
@@ -491,26 +548,18 @@ class GridArray
 		return set;
 	}
 
-	public function calculate_all_attack_options(unit:UnitData, movement_range:Array<SearchNode>, moved_already:Bool):Array<SearchNode>
-	{
-		var attack_options:Array<SearchNode> = [];
-
-		for (node in movement_range)
-			node.visited = false;
-
-		for (node in movement_range)
-			attack_options = attack_options.concat(calculate_immediate_attack_options(unit, node));
-
-		return attack_options;
-	}
-
-	public function calculate_immediate_attack_options(unit:UnitData, node:SearchNode):Array<SearchNode>
+	/**
+	 * Gets the attack options from that node given all the weapons
+	 * @param unit unit to check
+	 * @param node node we're searching from
+	 * @return Array<SearchNode>
+	 */
+	public function calculate_immediate_attack_options(attack_options:Array<SearchNode>, unit:UnitData, node:SearchNode):Array<SearchNode>
 	{
 		var moved_already:Bool = unit.moved_already;
-		var attack_options:Array<SearchNode> = [];
 
 		for (weapon in unit.weapons)
-			// can't use artillery weapons if you've already moved
+			// Can't use artillery weapons if you've already moved
 			if (!(moved_already && weapon.attack_type == WeaponAttackType.ARTILLERY))
 				for (col in -weapon.range...weapon.range + 1)
 					for (row in -weapon.range...weapon.range + 1)
@@ -518,13 +567,33 @@ class GridArray
 						var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
 						if (enemy_unit != null && enemy_unit.team != unit.team)
 						{
-							var attack_node:SearchNode = new_node(node.x + col, node.y + row, enemy_unit, weapon);
-							attack_node.attacking_from = node;
-							attack_node.path = node.path.copy().concat([node.uid]);
+							var attack_node:SearchNode = getNode(node.x + col, node.y + row);
 
-							attack_options.push(attack_node);
+							// Just make sure that this doesn't already exist with a better manhatten score before adding it
+							var best_score:Float = 999;
+							var best_path_length:Int = 999;
+							
+							if (attack_options.length > 0)
+								for (node in attack_options)
+									if (node.manhatten_score < best_score
+										&& node.path.length <= best_path_length
+										&& node.uid == attack_node.uid)
+									{
+										best_score = node.manhatten_score;
+										best_path_length = node.path.length;
+									}
+
+							if (best_score == 999)
+							{
+								attack_node.weapon = weapon;
+								attack_node.attacking_from = node;
+								attack_node.attack_range = Math.floor(Math.abs(col) > Math.abs(row) ? Math.abs(col) : Math.abs(row));
+								attack_node.path = node.path.copy().concat([node.uid]);
+								attack_options.push(attack_node);
+							}
 						}
 					}
+
 		return attack_options;
 	}
 
@@ -605,6 +674,12 @@ class GridArray
 		return path;
 	}
 
+	/**
+	 * Union of two node arrays since Haxe doesn't have built in sets :(
+	 * @param array_1 array 1
+	 * @param array_2 array 2
+	 * @return Array<SearchNode> union of two arrays
+	 */
 	function combine_node_arrays(array_1:Array<SearchNode>, array_2:Array<SearchNode>):Array<SearchNode>
 	{
 		// blank array handling
@@ -633,6 +708,11 @@ class GridArray
 		return array_1;
 	}
 
+	/**
+	 * Get int path as nodes, use on node.path
+	 * @param path path int array, like node.path
+	 * @return Array<SearchNode> nodes at those indexes
+	 */
 	public function get_path_as_nodes(path:Array<Int>):Array<SearchNode>
 	{
 		var path_nodes:Array<SearchNode> = [];
@@ -641,6 +721,10 @@ class GridArray
 		return path_nodes;
 	}
 
+	/**
+	 * Get grid.units as a 1D array, used extensively when creating new grid states
+	 * @return Array<UnitData> grid units as an array
+	 */
 	public function units_array():Array<UnitData>
 	{
 		var units_array:Array<UnitData> = [];
@@ -649,6 +733,11 @@ class GridArray
 		return units_array;
 	}
 
+	/**
+	 * Shorthand for getting the search node that corresponds to the unit data
+	 * @param unit_data the node to search
+	 * @return SearchNode 
+	 */
 	public function get_unit_data_node(unit_data:UnitData):SearchNode
 	{
 		return getNode(unit_data.x, unit_data.y);

@@ -37,6 +37,7 @@ class BasicAI extends ComputerPlayerHandler
 				best_state.realize_state(true);
 				PlayState.self.current_state = best_state;
 
+				dumb_ai();
 				return;
 			}
 		}

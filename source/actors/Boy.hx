@@ -22,10 +22,10 @@ class Boy extends Unit
 			{
 				w_id: Utils.get_unused_id(),
 				name: "sword",
-				attack_type: WeaponAttackType.RANGED,
+				attack_type: WeaponAttackType.ARTILLERY,
 				primary_stat: WeaponAttackStat.STR,
 				can_retaliate: true,
-				range: 2,
+				range: 5,
 				might: 15,
 				retaliate_might: 7,
 				blindspot: 0,

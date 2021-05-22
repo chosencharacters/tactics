@@ -556,7 +556,7 @@ class GridArray
 	 */
 	public function calculate_immediate_attack_options(attack_options:Array<SearchNode>, unit:UnitData, node:SearchNode):Array<SearchNode>
 	{
-		var moved_already:Bool = unit.moved_already;
+		var moved_already:Bool = unit.moved_already || node.distance > 0;
 
 		for (weapon in unit.weapons)
 			// Can't use artillery weapons if you've already moved
@@ -572,7 +572,7 @@ class GridArray
 							// Just make sure that this doesn't already exist with a better manhatten score before adding it
 							var best_score:Float = 999;
 							var best_path_length:Int = 999;
-							
+
 							if (attack_options.length > 0)
 								for (node in attack_options)
 									if (node.manhatten_score < best_score

@@ -37,6 +37,7 @@ class BasicAI extends ComputerPlayerHandler
 				best_state.realize_state(true);
 				PlayState.self.current_state = best_state;
 
+				dumb_ai();
 				return;
 			}
 		}
@@ -48,13 +49,29 @@ class BasicAI extends ComputerPlayerHandler
 		var states:Array<GridState> = new Array<GridState>();
 
 		var move_options:Array<SearchNode> = state.grid.bfs_movement_options(FlxPoint.weak(unit.x, unit.y), unit);
+		var attack_options:Array<SearchNode> = state.grid.attack_options.get(unit.uid);
 
-		for (move_node in move_options)
+		for (node in move_options)
 		{
 			var new_state:GridState = new GridState(state.grid.array, state.grid.units_array());
 
-			new_state.add_move_turn(unit, move_node, false);
+			new_state.add_move_turn(unit, node, false);
 			new_state.soft_transition_state();
+			states.push(new_state);
+		}
+		for (node in attack_options)
+		{
+			var new_state:GridState = new GridState(state.grid.array, state.grid.units_array());
+			var path_nodes:Array<SearchNode> = PlayState.self.current_state.grid.get_path_as_nodes(node.path);
+
+			if (path_nodes.length == 0)
+				path_nodes = [node];
+
+			if (path_nodes.length > 1)
+				new_state.add_move_turn(unit, path_nodes[path_nodes.length - 1], false);
+			new_state.add_attack_turn(unit, node.unit, node.weapon, false, path_nodes[path_nodes.length - 1]);
+			new_state.soft_transition_state();
+
 			states.push(new_state);
 		}
 
@@ -69,8 +86,11 @@ class BasicAI extends ComputerPlayerHandler
 			{
 				var node1:SearchNode = state.grid.getNode(unit1.x, unit1.y);
 				var node2:SearchNode = state.grid.getNode(unit2.x, unit2.y);
-				if (unit1.team != unit2.team)
+				if (unit1.team != unit2.team && unit2.team != team)
+				{
 					state.score -= Math.ceil(state.grid.manhatten_heuristic(node1, node2));
+					state.score -= unit1.health * 2;
+				}
 			}
 		}
 		return state;

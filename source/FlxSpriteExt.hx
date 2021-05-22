@@ -30,6 +30,9 @@ class FlxSpriteExt extends FlxSprite
 	/**Was the last frame and current frame different?**/
 	var isOnNewFrame:Bool = false;
 
+	/**Image or animation set name that was loaded, no file name or path specified, just as it is in animData*/
+	public var loaded_image:String = "";
+
 	public function new(?X:Float, ?Y:Float, ?SimpleGraphic:FlxGraphicAsset)
 	{
 		super(X, Y, SimpleGraphic);
@@ -39,7 +42,7 @@ class FlxSpriteExt extends FlxSprite
 	{
 		isOnNewFrame = animation == null ? false : prevFrame != animation.frameIndex;
 		prevFrame = animation == null ? 0 : animation.frameIndex;
-		
+
 		super.update(elapsed);
 	}
 
@@ -47,6 +50,7 @@ class FlxSpriteExt extends FlxSprite
 	public function loadAllFromAnimationSet(image:String, unique:Bool = false, autoIdle:Bool = true):Bool
 	{
 		var animSet:AnimSetData = Lists.getAnimationSet(image);
+		loaded_image = image;
 
 		if (animSet == null)
 			return false;

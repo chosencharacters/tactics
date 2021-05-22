@@ -12,6 +12,8 @@ class Boy extends Unit
 		team = 1;
 		speed = 3;
 		health = 25;
+		str = 5;
+
 		name = "Rodney";
 
 		loadAllFromAnimationSet("boy");
@@ -22,8 +24,10 @@ class Boy extends Unit
 				name: "sword",
 				attack_type: WeaponAttackType.RANGED,
 				primary_stat: WeaponAttackStat.STR,
+				can_retaliate: true,
 				range: 1,
-				might: 1,
+				might: 15,
+				retaliate_might: 7,
 				blindspot: 0,
 				knockback: 3
 			}

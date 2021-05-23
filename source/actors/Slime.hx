@@ -13,6 +13,7 @@ class Slime extends Unit
 		team = 2;
 		speed = 3;
 		max_health = 25;
+		str = 5;
 
 		name = "slime";
 

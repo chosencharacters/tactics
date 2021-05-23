@@ -136,6 +136,7 @@ class GridState
 					}
 				case "attack":
 					source_unit.realize_attack(this, turn);
+
 					if (!source_unit.REALIZING)
 					{
 						trace("ATTACK END");
@@ -161,13 +162,14 @@ class GridState
 		}
 	}
 
-	public function soft_transition_state():GridState
+	public function soft_transition_state()
 	{
-		var new_state:GridState = new GridState(grid.array, grid.units_array());
+		turn_index = 0;
 
-		if (turns.length > 0)
+		while (turn_index < turns.length)
 		{
-			var turn:GridStateTurn = turns[0];
+			var turn:GridStateTurn = turns[turn_index];
+			turn_index++;
 			switch (turn.turn_type)
 			{
 				case "move":
@@ -175,11 +177,10 @@ class GridState
 					grid.units.get(uid).x = grid.nodes[turn.path[turn.path.length - 1]].x;
 					grid.units.get(uid).y = grid.nodes[turn.path[turn.path.length - 1]].y;
 				case "attack":
-					// pass
+					attack(turn, true);
 			}
 		}
-
-		return new_state;
+		turn_index = 0;
 	}
 
 	public function add_move_turn(unit:UnitData, node:SearchNode, realize_state_set:Bool = true)
@@ -248,7 +249,7 @@ class GridState
 		throw "invalid unit with id " + data.uid;
 	}
 
-	public function attack(turn:GridStateTurn):AttackData
+	public function attack(turn:GridStateTurn, simulated:Bool = false):AttackData
 	{
 		turn.source_unit = find_unit_data_in_units(turn.source_unit);
 		turn.defending_unit = find_unit_data_in_units(turn.defending_unit);
@@ -278,7 +279,10 @@ class GridState
 			attack_node.y = kb_line[kb_line.length - 1].y;
 		}
 
-		write_state_to_game();
+		trace(turn.source_unit.health, turn.defending_unit.health);
+
+		if (!simulated)
+			write_state_to_game();
 
 		return attack_data;
 	}
@@ -353,6 +357,27 @@ class GridState
 			for (unit in PlayState.self.units)
 				if (unit_data.uid == unit.uid)
 					unit.write_from_unit_data(unit_data);
+	}
+
+	/**
+	 * Clones turns but swaps the source units to whatever this state's versions are, this does NOT preserve EITHER state's turns
+	 * It uses refrences not copies. So make a backup if you're gonna mess with this and want the original turns preserved.
+	 * @param input 
+	 */
+	public function clone_turns(turns_to_copy:Array<GridStateTurn>)
+	{
+		turns = [];
+		for (turn in turns_to_copy)
+		{
+			trace(turn.source_unit.x, turn.source_unit.y, grid.units.get(turn.source_unit.uid).x, grid.units.get(turn.source_unit.uid).y);
+			if (turn.source_unit != null)
+				turn.source_unit = grid.units.get(turn.source_unit.uid);
+			if (turn.defending_unit != null)
+				turn.defending_unit = grid.units.get(turn.defending_unit.uid);
+			trace(turn.source_unit.x, turn.source_unit.y, grid.units.get(turn.source_unit.uid).x, grid.units.get(turn.source_unit.uid).y);
+			turns.push(turn);
+		}
+		trace(turns_to_copy.length, turns.length);
 	}
 }
 
@@ -492,6 +517,8 @@ class GridArray
 		var visited:Array<SearchNode> = [];
 		var current:SearchNode;
 
+		trace("BFS!");
+
 		movement_options.set(unit.uid, []);
 		attack_options.set(unit.uid, []);
 
@@ -572,12 +599,17 @@ class GridArray
 	{
 		var moved_already:Bool = unit.moved_already || node.distance > 0;
 
+		if (node.unit != null && node.unit != unit)
+			return attack_options;
+
 		for (weapon in unit.weapons)
 			// Can't use artillery weapons if you've already moved
 			if (!(moved_already && weapon.attack_type == WeaponAttackType.ARTILLERY))
 				for (col in -weapon.range...weapon.range + 1)
 					for (row in -weapon.range...weapon.range + 1)
 					{
+						/*trace('org (${node.x} ${node.y}) search (${node.x + col} ${node.y + row}) len '
+							+ manhatten_heuristic(getNode(node.x + col, node.y + row), node)); */
 						if (row > weapon.blindspot || row < -weapon.blindspot || col > weapon.blindspot || col < -weapon.blindspot)
 						{
 							var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
@@ -599,8 +631,11 @@ class GridArray
 											best_path_length = node.path.length;
 										}
 
-								if (best_score == 999)
+								// just make sure this one isn't violating diagonal rules from the original
+								var DIAGONAL_CHECK:Bool = manhatten_heuristic(attack_node, getNode(node.x, node.y)) <= weapon.range;
+								if (best_score == 999 && DIAGONAL_CHECK)
 								{
+									trace(enemy_unit.x, node.y, attack_node.x, attack_node.y);
 									attack_node.weapon = weapon;
 									attack_node.attacking_from = node;
 									attack_node.attack_range = Math.floor(Math.abs(col) > Math.abs(row) ? Math.abs(col) : Math.abs(row));
@@ -631,9 +666,10 @@ class GridArray
 	 * Gets neighbors in four cardinal directions that aren't colliding
 	 * @param current node to get the neighbors of
 	 * @param team team of the node to act as collision tiles if they don't match
+	 * @param attack_mode if false, doesn't return the nodes with units
 	 * @return Array<SearchNode> valid neighbors
 	 */
-	function get_neighbors(current:SearchNode, unit:UnitData):Array<SearchNode>
+	function get_neighbors(current:SearchNode, unit:UnitData, attack_mode:Bool = false):Array<SearchNode>
 	{
 		var neighbors:Array<SearchNode> = [];
 

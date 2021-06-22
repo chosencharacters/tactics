@@ -51,6 +51,13 @@ class Unit extends Actor
 		else
 			color = FlxColor.WHITE;
 
+		if (!alive)
+		{
+			alpha -= 0.05;
+			if (alpha == 0)
+				kill();
+		}
+
 		select_position();
 		super.update(elapsed);
 	}
@@ -260,7 +267,8 @@ class Unit extends Actor
 			weapons: weapons,
 			health: health,
 			moved_already: speed != movement_left,
-			exhausted: exhausted
+			exhausted: exhausted,
+			alive: alive
 		};
 	}
 
@@ -271,6 +279,7 @@ class Unit extends Actor
 		health = data.health;
 		max_health = data.max_health;
 		exhausted = data.exhausted;
+		alive = data.alive;
 
 		snap_to_grid();
 	}
@@ -279,5 +288,11 @@ class Unit extends Actor
 	{
 		movement_left = speed;
 		health = max_health;
+	}
+
+	override function kill()
+	{
+		trace("UNIT " + name + tile_position.x + " " + tile_position.y + " DIED o_o");
+		super.kill();
 	}
 }

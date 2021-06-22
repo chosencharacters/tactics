@@ -88,7 +88,7 @@ class Cursor extends FlxSpriteExt
 			for (unit in PlayState.self.units)
 			{
 				var TEAM_OK:Bool = unit.team == PlayState.self.current_state.active_team;
-				if (unit.tile_position.x == tile_x && unit.tile_position.y == tile_y)
+				if (unit.tile_position.x == tile_x && unit.tile_position.y == tile_y && unit.alive)
 				{
 					PlayState.self.selected_unit = unit;
 					if (TEAM_OK && !unit.exhausted)

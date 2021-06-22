@@ -22,7 +22,7 @@ class PlayerHandler
 	{
 		units = [];
 		for (unit in PlayState.self.units)
-			if (unit.team == team)
+			if (unit.team == team && unit.alive)
 				units.push(unit);
 	}
 }

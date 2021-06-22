@@ -12,8 +12,8 @@ class Slime extends Unit
 
 		team = 2;
 		speed = 3;
-		max_health = 25;
-		str = 5;
+		max_health = 15;
+		str = 1;
 
 		name = "slime";
 
@@ -28,7 +28,7 @@ class Slime extends Unit
 				can_retaliate: true,
 				range: 1,
 				might: 10,
-				retaliate_might: 5,
+				retaliate_might: 2,
 				blindspot: 0,
 				knockback: 3
 			}

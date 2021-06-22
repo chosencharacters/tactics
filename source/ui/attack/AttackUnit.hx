@@ -24,6 +24,9 @@ class AttackUnit extends FlxSpriteExt
 
 	var attack_data:AttackData;
 
+	/**Will this unit die*/
+	var DEAD:Bool = false;
+
 	public function new(Data:AttackData, ?X:Float = 0, ?Y:Float = 0, is_attacker:Bool = true)
 	{
 		super(X, Y);
@@ -64,6 +67,8 @@ class AttackUnit extends FlxSpriteExt
 				attack();
 			case "damage":
 				receive_damage();
+			case "die":
+				die();
 		}
 		super.update(elapsed);
 	}
@@ -140,6 +145,7 @@ class AttackUnit extends FlxSpriteExt
 		{
 			color = FlxColor.RED;
 			var damage:Float = !ATTACKER ? attack_data.attacking_damage : attack_data.defending_damage;
+			DEAD = !ATTACKER ? damage >= attack_data.defending_unit.health : damage >= attack_data.attacking_unit.health;
 			FlxG.state.subState.add(new DamageText(getGraphicMidpoint().x, getGraphicMidpoint().y, damage));
 			Utils.shake("light");
 		}
@@ -160,8 +166,23 @@ class AttackUnit extends FlxSpriteExt
 			}
 			else
 			{
-				sstate("none");
+				if (!DEAD)
+					sstate("none");
+				else
+					sstate("die");
 			}
 		}
+	}
+
+	/**
+	 * Fade out n' die
+	 */
+	function die()
+	{
+		tick++;
+		if (tick > 5)
+			alpha -= .05;
+		if (alpha <= 0)
+			sstate("none");
 	}
 }

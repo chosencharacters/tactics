@@ -23,7 +23,7 @@ class BasicAI extends ComputerPlayerHandler
 			return;
 		for (unit in current_state.grid.units)
 		{
-			if (unit.team == team && unit.movement_left > 0)
+			if (unit.team == team && unit.movement_left > 0 && unit.alive)
 			{
 				var states:Array<GridState> = [];
 
@@ -68,13 +68,10 @@ class BasicAI extends ComputerPlayerHandler
 			if (path_nodes.length == 0)
 				path_nodes = [node];
 
-			trace("attack found " + path_nodes.length);
-
 			if (path_nodes.length > 1)
 				new_state.add_move_turn(unitS, path_nodes[path_nodes.length - 1], false);
 			new_state.add_attack_turn(unitS, node.unit, node.weapon, false, path_nodes[path_nodes.length - 1]);
 
-			trace(new_state.turns.length);
 			new_state.soft_transition_state();
 
 			states.push(new_state);
@@ -90,7 +87,7 @@ class BasicAI extends ComputerPlayerHandler
 
 		for (unit2 in state.grid.units)
 		{
-			if (unit2.team != unit1.team)
+			if (unit2.team != unit1.team && unit2.alive)
 			{
 				var node1:SearchNode = state.grid.getNode(unit1.x, unit1.y);
 				var node2:SearchNode = state.grid.getNode(unit2.x, unit2.y);
@@ -112,7 +109,6 @@ class BasicAI extends ComputerPlayerHandler
 		for (state in states)
 			if (state.score > best_state.score)
 				best_state = state;
-		trace("best state", best_state.score, best_state.turns.length);
 		return best_state;
 	}
 

@@ -46,7 +46,8 @@ typedef UnitData =
 	health:Float,
 	weapons:Array<WeaponDef>,
 	moved_already:Bool,
-	exhausted:Bool
+	exhausted:Bool,
+	alive:Bool
 }
 
 typedef AttackData =
@@ -279,7 +280,10 @@ class GridState
 			attack_node.y = kb_line[kb_line.length - 1].y;
 		}
 
-		trace(turn.source_unit.health, turn.defending_unit.health);
+		if (turn.source_unit.health <= 0)
+			turn.source_unit.alive = false;
+		if (turn.defending_unit.health <= 0)
+			turn.defending_unit.alive = false;
 
 		if (!simulated)
 			write_state_to_game();
@@ -308,14 +312,18 @@ class GridState
 		for (weapon in attack.defending_unit.weapons)
 			if (weapon.can_retaliate)
 			{
-				if (weapon.range >= attack.attack_range && attack.attack_range > weapon.blindspot)
+				if (weapon.range >= attack.attack_range && attack.attack_range >= weapon.blindspot)
+				{
 					CAN_RETALIATE = true;
+					attack.defending_weapon = weapon;
+				}
 			}
 
 		CAN_RETALIATE = turn.defending_unit.health > attack.attacking_damage && CAN_RETALIATE;
 
 		if (CAN_RETALIATE)
-			attack.defending_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.attack_weapon.might, attack.attack_weapon);
+			attack.defending_damage = calculate_single_attack(turn.source_unit, turn.defending_unit, attack.defending_weapon.retaliate_might,
+				attack.defending_weapon);
 
 		return attack;
 	}
@@ -369,15 +377,12 @@ class GridState
 		turns = [];
 		for (turn in turns_to_copy)
 		{
-			trace(turn.source_unit.x, turn.source_unit.y, grid.units.get(turn.source_unit.uid).x, grid.units.get(turn.source_unit.uid).y);
 			if (turn.source_unit != null)
 				turn.source_unit = grid.units.get(turn.source_unit.uid);
 			if (turn.defending_unit != null)
 				turn.defending_unit = grid.units.get(turn.defending_unit.uid);
-			trace(turn.source_unit.x, turn.source_unit.y, grid.units.get(turn.source_unit.uid).x, grid.units.get(turn.source_unit.uid).y);
 			turns.push(turn);
 		}
-		trace(turns_to_copy.length, turns.length);
 	}
 }
 
@@ -517,8 +522,6 @@ class GridArray
 		var visited:Array<SearchNode> = [];
 		var current:SearchNode;
 
-		trace("BFS!");
-
 		movement_options.set(unit.uid, []);
 		attack_options.set(unit.uid, []);
 
@@ -561,7 +564,7 @@ class GridArray
 		{
 			var VALID_VISITED:Bool = node.distance <= unit.movement_left;
 			for (u in units)
-				if (u.x == node.x && u.y == node.y)
+				if (u.x == node.x && u.y == node.y && u.alive)
 					VALID_VISITED = false;
 			if (VALID_VISITED)
 				response_array.push(node);
@@ -613,7 +616,7 @@ class GridArray
 						if (row > weapon.blindspot || row < -weapon.blindspot || col > weapon.blindspot || col < -weapon.blindspot)
 						{
 							var enemy_unit:UnitData = getTileUnit(node.x + col, node.y + row);
-							if (enemy_unit != null && enemy_unit.team != unit.team)
+							if (enemy_unit != null && enemy_unit.team != unit.team && enemy_unit.alive)
 							{
 								var attack_node:SearchNode = getNode(node.x + col, node.y + row);
 
@@ -635,7 +638,6 @@ class GridArray
 								var DIAGONAL_CHECK:Bool = manhatten_heuristic(attack_node, getNode(node.x, node.y)) <= weapon.range;
 								if (best_score == 999 && DIAGONAL_CHECK)
 								{
-									trace(enemy_unit.x, node.y, attack_node.x, attack_node.y);
 									attack_node.weapon = weapon;
 									attack_node.attacking_from = node;
 									attack_node.attack_range = Math.floor(Math.abs(col) > Math.abs(row) ? Math.abs(col) : Math.abs(row));
@@ -697,7 +699,7 @@ class GridArray
 
 			if (node != null)
 			{
-				var VALID_TEAM:Bool = node.unit == null || node.unit.team == unit.team || node.unit.team == 0;
+				var VALID_TEAM:Bool = node.unit == null || node.unit.team == unit.team || node.unit.team == 0 || !node.unit.alive;
 				if (node.value >= 0 && collisions.indexOf(node.value) <= -1 && VALID_TEAM)
 					neighbors.push(node);
 			}
@@ -720,7 +722,7 @@ class GridArray
 		for (i in 0...distance)
 		{
 			current = getNode(current.x + vel_x, current.y + vel_y);
-			if (current.unit != null || get_collision(current))
+			if (current == null || current.unit != null || get_collision(current))
 				return path;
 			path.push(current);
 		}

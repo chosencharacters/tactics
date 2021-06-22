@@ -11,10 +11,8 @@ class ComputerPlayerHandler extends PlayerHandler
 	{
 		var TURN_END:Bool = true;
 		for (unit in units)
-			if (unit.movement_left > 0)
-			{
+			if (unit.movement_left > 0 && unit.alive)
 				TURN_END = false;
-			}
 		if (TURN_END)
 			PlayState.self.turn_manager.end_turn();
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<root>
+	<animSet image = "boy" path = "assets\images\chars">
+		<anim name = "idle">0</anim>
+		<anim name = "move">1t6</anim>
+		<anim name = "attack" fps = "20" looping = "false">7,8h4,7</anim>
+		<anim name = "hit">0</anim>
+	</animSet>
+
+	<animSet image = "girl" path = "assets\images\chars">
+		<anim name = "idle">0</anim>
+		<anim name = "move">1t6</anim>
+		<anim name = "attack" fps = "20" looping = "false">1t6</anim>
+		<anim name = "hit">1t6</anim>
+	</animSet>
+
+	<animSet image = "slime" path = "assets\images\chars">
+		<anim name = "idle" fps = "8">0t3</anim>
+		<anim name = "move">0t3</anim>
+		<anim name = "attack" fps = "20" looping = "false">4t7,2t3</anim>
+		<anim name = "hit">0</anim>
+	</animSet>
+</root>
